@@ -1,0 +1,9 @@
+# Pinned versions verified on Ubuntu 26.04, Python 3.14, CPU only.
+# Note: mediapipe depends on opencv-contrib-python (a superset of opencv-python).
+# Do not also install opencv-python: both provide `cv2` and conflict.
+mediapipe==1.0.1
+opencv-contrib-python==5.0.0.93
+numpy==2.5.3
+scipy==1.18.1
+PyYAML==6.0.3
+# Added in later phases: flask, requests, python-dotenv, pygame

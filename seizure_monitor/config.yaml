@@ -1,0 +1,55 @@
+# Seizure monitor configuration.
+# Every threshold lives here; the code contains no magic numbers.
+# Tune detector values by watching the live window in main.py.
+
+capture:
+  width: 640               # frames are downscaled to this width (aspect kept) to stay real-time on CPU
+  process_fps: 15          # max frames per second we run pose estimation on
+
+pose:
+  # "full" is as fast as "lite" on our test laptop and more accurate; use "lite" on slower machines.
+  model: full
+  model_dir: models
+  model_url: https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_{model}/float16/latest/pose_landmarker_{model}.task
+  min_detection_confidence: 0.5
+  min_tracking_confidence: 0.5
+
+detector:
+  # --- Signal preparation ---
+  resample_hz: 15          # trajectories are resampled to this fixed rate so results don't depend on camera fps
+  window_s: 4.0            # length of the sliding analysis window
+  hop_s: 0.25              # how often the window is re-analysed
+  min_visibility: 0.5      # landmarks below this MediaPipe visibility are treated as missing
+  max_gap_s: 0.5           # missing stretches up to this long are filled by interpolation; longer -> point unusable in this window
+  body_lost_reset_s: 2.0   # if both shoulders are missing this long, clear history and start over
+  min_shoulder_width_px: 20  # below this the person is too small/side-on for reliable normalisation
+
+  # --- Rhythm features (per tracked point) ---
+  band_hz: [1.5, 6.0]      # frequency band typical of clonic jerking
+  min_amplitude: 0.04      # RMS movement in shoulder widths; filters out pose-estimation jitter
+  min_band_ratio: 0.75     # fraction of movement power inside band_hz. NOTE: white noise already scores ~0.6 at 15 Hz
+  min_prominence: 10.0     # in-band peak power / median in-band power. Random noise reaches ~8; a clear rhythm is 100+
+
+  # Points are grouped into limbs; a limb is rhythmic if any of its points is.
+  # Grouping stops wrist+elbow on the same arm from counting as two limbs.
+  limbs:
+    left_arm: [left_wrist, left_elbow]
+    right_arm: [right_wrist, right_elbow]
+    left_leg: [left_knee, left_ankle]
+    right_leg: [right_knee, right_ankle]
+    trunk: [left_shoulder, right_shoulder]
+  min_rhythmic_limbs: 2    # a window is "rhythmic" only if at least this many limbs are
+
+  # --- Event logic (hysteresis) ---
+  onset_s: 8.0             # rhythm must persist this long before an event is declared
+  demo_onset_s: 3.0        # used instead of onset_s when main.py runs with --demo
+  rhythm_gap_tolerance_s: 1.0  # brief non-rhythmic windows shorter than this don't break a rhythm run
+  end_hold_s: 5.0          # event ends after rhythm has been absent this long
+
+  # --- Confidence score (heuristic 0-1, NOT a probability) ---
+  confidence:
+    weight_limbs: 0.4      # share of visible limbs that are rhythmic
+    weight_band: 0.3       # how far band_ratio exceeds its threshold
+    weight_prominence: 0.3 # how far prominence exceeds its threshold
+    band_ratio_full: 0.95  # band_ratio at which the band score reaches 1
+    prominence_full: 30.0  # prominence at which the prominence score reaches 1
