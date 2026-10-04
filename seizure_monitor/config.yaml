@@ -53,3 +53,21 @@ detector:
     weight_prominence: 0.3 # how far prominence exceeds its threshold
     band_ratio_full: 0.95  # band_ratio at which the band score reaches 1
     prominence_full: 30.0  # prominence at which the prominence score reaches 1
+
+monitor:
+  source_name: Bedroom camera   # shown in clips, the event log and (later) alerts
+
+recording:
+  enabled: true            # set false while tuning if you don't want clips
+  data_dir: data           # events.db and clips/ live here (gitignored)
+  pre_event_s: 30          # footage kept from before detection (rhythm builds up before we're sure)
+  post_event_s: 30         # keep recording this long after the event ends
+  fps: 15                  # clip frame rate; should match capture.process_fps
+  jpeg_quality: 80         # pre-event buffer is JPEG-compressed to keep memory small (~20 MB for 30 s)
+
+privacy:
+  blur_person: true        # pixelate the person in saved clips (live window is not blurred)
+  pixel_blocks: 24         # blocks across the person's longer side; smaller = stronger anonymisation.
+                           # Movement stays visible via the skeleton drawn on top.
+  margin: 0.15             # extra space around the person's box, as a fraction of its size
+  hold_s: 2.0              # if the person is lost longer than this, pixelate the whole frame (fail-safe)
