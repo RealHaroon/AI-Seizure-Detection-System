@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Events · Seizure Monitor{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="card-head">
+    <h1>Events</h1>
+    <a class="button secondary" href="{{ url_for('export_csv') }}">Export seizure diary (CSV)</a>
+  </div>
+  <div class="counts">
+    <span class="label label-unreviewed">{{ counts.unreviewed }} need review</span>
+    <span class="label label-real_seizure">{{ counts.real_seizure }} real seizure</span>
+    <span class="label label-false_alarm">{{ counts.false_alarm }} false alarm</span>
+  </div>
+
+  {% if events %}
+  <table class="events">
+    <thead>
+      <tr><th>Date</th><th>Time</th><th>Duration</th><th>Confidence*</th><th>Label</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for e in events %}
+      <tr>
+        <td data-th="Date">{{ e.date }}</td>
+        <td data-th="Time">{{ e.time }}</td>
+        <td data-th="Duration">{{ e.duration }}</td>
+        <td data-th="Confidence*">{{ e.confidence_text }}</td>
+        <td data-th="Label"><span class="label label-{{ e.review_label }}">{{ e.label_text }}</span></td>
+        <td><a class="button small" href="{{ url_for('event_page', event_id=e.id) }}">Review</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted small">* Heuristic 0–1 score of how strong and widespread the rhythmic movement was.
+    It is not a probability that a seizure occurred.</p>
+  {% else %}
+  <p class="muted">No events recorded yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

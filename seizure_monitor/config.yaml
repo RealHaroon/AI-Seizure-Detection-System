@@ -71,3 +71,30 @@ privacy:
                            # Movement stays visible via the skeleton drawn on top.
   margin: 0.15             # extra space around the person's box, as a fraction of its size
   hold_s: 2.0              # if the person is lost longer than this, pixelate the whole frame (fail-safe)
+
+alerts:
+  escalate_after_s: 30     # no "I'm with them" within this time -> urgent resend + call flag for the Android app
+  cooldown_s: 60           # events closer together than this are one incident: one alert, one "ended" message
+  ack_stops_alarm: true    # pressing "I'm with them" also silences the local alarm
+  alarm:
+    enabled: true
+    volume: 0.8            # 0-1
+    tones_hz: [880, 440]   # alternating high/low beeps: hard to sleep through, distinct from phone sounds
+    beep_s: 0.3
+    gap_s: 0.05
+  telegram:
+    enabled: true          # also needs TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env
+    send_snapshot: true    # attach a still image (pixelated if privacy.blur_person is on)
+    request_timeout_s: 10  # every network call times out; never blocks detection
+    poll_timeout_s: 25     # long-poll duration when waiting for button presses
+    send_retries: 3
+    retry_backoff_s: 2
+
+dashboard:
+  enabled: true
+  host: 127.0.0.1          # this computer only. 0.0.0.0 = reachable from phones on your Wi-Fi
+                           # (needed for the Android call app) but there is NO login: trusted networks only
+  port: 8000
+  stream_fps: 10           # live view frame rate in the browser
+  stream_jpeg_quality: 70
+  blur_stream: false       # pixelate the person in the live web view too

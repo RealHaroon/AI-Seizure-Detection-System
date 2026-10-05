@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Live · Seizure Monitor{% endblock %}
+{% block content %}
+{% if live %}
+<div class="live-grid">
+  <section class="card video-card">
+    <img class="stream" src="{{ url_for('stream') }}" alt="Live camera with pose overlay">
+  </section>
+
+  <section class="card status-card">
+    <div id="state" class="state state-unknown">Connecting…</div>
+    <dl class="facts">
+      <div><dt>Camera</dt><dd id="source">–</dd></div>
+      <div><dt>Rhythm</dt><dd id="rhythm">–</dd></div>
+      <div><dt>Person in view</dt><dd id="body">–</dd></div>
+    </dl>
+    <div id="alert" class="alert hidden"></div>
+    <p class="muted small">Updates every second. Movement is analysed for rhythmic jerking in several limbs
+      at once; an event starts only after it persists for several seconds.</p>
+  </section>
+</div>
+{% else %}
+<section class="card">
+  <h1>Monitor not running</h1>
+  <p class="muted">The dashboard is in review mode. Start <code>main.py</code> to see the live camera.
+    You can still <a href="{{ url_for('events_page') }}">review recorded events</a>.</p>
+</section>
+{% endif %}
+
+<section class="card">
+  <div class="card-head">
+    <h2>Recent events</h2>
+    <a href="{{ url_for('events_page') }}">All events →</a>
+  </div>
+  {% if recent %}
+  <ul class="event-list">
+    {% for e in recent %}
+    <li>
+      <a href="{{ url_for('event_page', event_id=e.id) }}">
+        <span><strong>{{ e.date }}</strong> · {{ e.time }}</span>
+        <span class="muted">{{ e.duration }}</span>
+        <span class="label label-{{ e.review_label }}">{{ e.label_text }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">No events recorded yet.</p>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if live %}<script src="{{ url_for('static', filename='live.js') }}"></script>{% endif %}
+{% endblock %}

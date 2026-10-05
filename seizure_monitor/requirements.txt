@@ -6,4 +6,9 @@ opencv-contrib-python==5.0.0.93
 numpy==2.5.3
 scipy==1.18.1
 PyYAML==6.0.3
-# Added in later phases: flask, requests, python-dotenv, pygame
+requests==2.34.2
+python-dotenv==1.2.4
+# pygame-ce: community edition of pygame, same `import pygame` API. Used instead of pygame
+# because pygame 2.6.1 has no prebuilt package for Python 3.14.
+pygame-ce==2.5.8
+flask==3.1.3

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Seizure Monitor{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('live_page') }}">
+      <span class="brand-mark" aria-hidden="true"></span>Seizure Monitor
+    </a>
+    <nav>
+      <a href="{{ url_for('live_page') }}" class="{{ 'active' if page == 'live' }}">Live</a>
+      <a href="{{ url_for('events_page') }}" class="{{ 'active' if page == 'events' }}">Events</a>
+      <a href="{{ url_for('export_csv') }}">Export diary</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    Research prototype, not a medical device. Detects only <strong>convulsive (motor) seizures</strong>
+    using AI pose estimation and movement rhythm analysis; it cannot detect non-motor seizures.
+    Never rely on it as the only safety measure.
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -45,7 +45,7 @@ def draw_clip_banner(frame, out, wall_time: float, source_name: str):
     text(frame, label, w - tw - 8, 18, STATE_COLOUR[out.state], 0.45, 1)
 
 
-def render_live(frame, result, out, cfg, fps, recording=False):
+def render_live(frame, result, out, cfg, fps, recording=False, alert=None):
     """Live tuning view: camera frame with skeleton, plus a feature panel on the right."""
     draw_skeleton(frame, result, out)
     h = max(frame.shape[0], 480)
@@ -57,7 +57,20 @@ def render_live(frame, result, out, cfg, fps, recording=False):
         cv2.circle(canvas, (frame.shape[1] - 50, 22), 7, RED, -1)
         text(canvas, "REC", frame.shape[1] - 38, 27, RED, 0.5, 2)
     _draw_panel(canvas, frame.shape[1], out, cfg, fps)
+    if alert:
+        _draw_alert_status(canvas, frame.shape[1] + 12, canvas.shape[0] - 60, alert)
     return canvas
+
+
+def _draw_alert_status(img, x, y, alert):
+    if alert["alarm_active"]:
+        text(img, "ALARM ON - press S to stop", x, y, RED, 0.5, 2)
+    if alert["acknowledged_by"]:
+        text(img, f"Acknowledged: {alert['acknowledged_by'][:28]}", x, y - 22, GREEN)
+    elif alert["call"]:
+        text(img, "ESCALATED - no response, call flag set", x, y - 22, RED)
+    elif alert["incident_active"]:
+        text(img, "Alert sent - waiting for response", x, y - 22, ORANGE)
 
 
 def _draw_panel(img, x0, out, cfg, fps):
@@ -111,5 +124,5 @@ def _draw_panel(img, x0, out, cfg, fps):
     y += 30
     if out.current_event:
         text(img, f"Event running {out.t - out.current_event.start:.0f}s", x, y, RED, 0.5, 1)
-    text(img, f"{fps:4.1f} fps   q: quit", x, img.shape[0] - 12, GREY)
+    text(img, f"{fps:4.1f} fps   s: stop alarm   q: quit", x, img.shape[0] - 12, GREY)
     text(img, "amp = RMS movement in shoulder widths", x, img.shape[0] - 32, GREY, 0.38)

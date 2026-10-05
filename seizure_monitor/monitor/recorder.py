@@ -156,6 +156,11 @@ class EventRecorder:
     def recording(self) -> bool:
         return self._writer is not None
 
+    @property
+    def latest_jpeg(self) -> bytes | None:
+        """Most recent clip frame (privacy filter + overlay applied), used as the alert snapshot."""
+        return self._buffer[-1][1].tobytes() if self._buffer else None
+
     def add_frame(self, frame, pose_result, out, wall_time: float):
         """Call once per processed frame (after any start_event/end_event for this frame)."""
         t = out.t

@@ -1,0 +1,167 @@
+SEIZURE MONITOR - PROGRESS SO FAR
+Updated: 5 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
+==========================================================================
+
+WHAT THE SYSTEM DOES (one line)
+  A camera watches a person; AI pose estimation (MediaPipe) tracks their
+  limbs; frequency analysis detects sustained rhythmic jerking (convulsive
+  seizures only); then it alarms, alerts family on Telegram, saves a clip,
+  and logs the event on a dashboard for a doctor to review.
+  We do NOT have a trained seizure classifier and never claim one.
+
+
+--------------------------------------------------------------------------
+SETUP / CLEANUP
+--------------------------------------------------------------------------
+  [x] Read the old prototype; rebuilt everything cleanly in seizure_monitor/
+  [x] Deleted old files: seizure_model.py, server.py, test_alert.py,
+      test_telegram.py, test.html, camera_detection.py, offline_alarm.py, app.py
+  [x] Removed all secrets from code; Telegram token/chat id now in .env
+      (.env is gitignored; .env.example has placeholders)
+  [x] Python venv at ~/.venvs/seizure-monitor
+      (Python refuses to create a venv in a path containing ":", so it can't
+      live in the repo folder)
+  [x] All versions pinned in requirements.txt (Python 3.14, CPU only)
+  [x] MediaPipe 1.0.1 uses the new Tasks PoseLandmarker API
+      (the old mp.solutions API no longer exists)
+  [x] test_vidoes/ added to .gitignore (patient videos must never be committed)
+
+
+--------------------------------------------------------------------------
+PHASE 1 - DETECTOR  (done)
+--------------------------------------------------------------------------
+  [x] monitor/capture.py  - webcam / video file / RTSP / phone (IP Webcam)
+                            with real timestamps, downscaled to 640 wide
+  [x] monitor/pose.py     - MediaPipe pose, 10 tracked points
+                            (shoulders, elbows, wrists, knees, ankles)
+  [x] monitor/detector.py - core logic, pure code, testable without a camera:
+        - resamples movement to a fixed 15 Hz (works at any camera fps)
+        - normalises by shoulder width (distance from camera doesn't matter)
+        - fills short gaps; resets if the body is lost for too long
+        - 4 s sliding window + FFT per point: amplitude, band-power ratio
+          (1.5-6 Hz), peak prominence
+        - needs 2+ limbs rhythmic at once
+        - event starts after 8 s of rhythm (3 s in --demo mode),
+          ends after 5 s without rhythm
+        - 0-1 confidence score (heuristic, NOT a probability)
+  [x] main.py - live window: skeleton, state, per-limb numbers, fps
+  [x] All thresholds in config.yaml
+
+
+--------------------------------------------------------------------------
+PHASE 2 - RECORDING + STORAGE  (done)
+--------------------------------------------------------------------------
+  [x] monitor/recorder.py - always keeps the last 30 s in memory (~20 MB)
+        - clip = 30 s before detection ... 30 s after the event ends
+        - skeleton overlay + date/time/camera banner
+        - privacy: person pixelated by default (whole frame if person lost)
+        - H.264 MP4 via ffmpeg, so it plays in browsers
+  [x] monitor/storage.py - SQLite event log (data/events.db):
+        id, start, end, duration, confidence, clip, camera,
+        review label (unreviewed / real seizure / false alarm), note
+        - row saved the moment an event starts (survives crashes)
+
+
+--------------------------------------------------------------------------
+PHASE 3 - ALERTS  (done)
+--------------------------------------------------------------------------
+  [x] monitor/alerts.py
+        - local alarm (pygame-ce), works without internet;
+          press 's' in the live window to stop it
+        - Telegram message: time, camera, snapshot photo,
+          "I'm with them" button (works without a public server)
+        - nobody responds in 30 s -> URGENT resend + "call" flag
+          for the Android automation app
+        - button press -> everyone is told who responded
+        - "Event ended, lasted X min Y sec"
+        - 60 s cooldown: one incident = one alert (no spam)
+        - network never blocks or crashes detection; failures logged
+  [x] tools/test_alert.py - test Telegram without faking a seizure
+  [x] Fixed: Ctrl+C couldn't stop the monitor after the alarm had played
+
+
+--------------------------------------------------------------------------
+PHASE 4 - DASHBOARD  (done)    http://127.0.0.1:8000
+--------------------------------------------------------------------------
+  [x] Live page: camera stream + skeleton, state badge, alert status
+  [x] Events page: date, time, duration, confidence, label
+      (phone-friendly cards)
+  [x] Event page: clip playback, "Real seizure" / "False alarm" + note
+  [x] Export seizure diary as CSV (opens in Excel, Urdu notes OK)
+  [x] GET /api/status for the Android call app
+  [x] Standalone review mode: python dashboard/app.py
+  [x] Localhost only by default, never debug mode;
+      "not a medical device" notice on every page
+
+
+--------------------------------------------------------------------------
+TESTING DONE
+--------------------------------------------------------------------------
+  [x] 34 automated tests, all passing (python -m pytest)
+        detector 11, recorder 4, storage 3, alerts 11, dashboard 5
+  [x] Pipeline speed: ~28 ms per frame -> 15 fps on this laptop
+  [x] Telegram client tested against a local imitation of the Telegram API
+      (real bot not yet tested - needs your token)
+  [x] Analysed test videos 1-7:
+        - test1/2/4/5: handheld phone, partial body or slow-motion -> unusable
+        - test2: pose tracking fails on the toddler
+        - test3: face only (and identical to the old test4)
+        - test6: best so far (fixed camera, whole body) but movement is mostly
+                 0.5-1 Hz, below our 1.5 Hz band
+        - test7: right arm correctly detected as rhythmic,
+                 but only 1 limb (we need 2)
+  [x] Finding: real seizures look slower and more irregular than our
+      synthetic tests -> thresholds need tuning on proper footage
+
+
+--------------------------------------------------------------------------
+NOT DONE YET
+--------------------------------------------------------------------------
+  [ ] Detector tuning on real footage   <- most important for the demo
+  [ ] Phase 5: tools/evaluate.py (sensitivity, false alarms/hour, latency)
+  [ ] Phase 6: honest README (setup, limits, privacy, disclaimer, roadmap)
+  [ ] Slides for the meeting (5-6)
+  [ ] Test with a real Telegram bot (make a NEW bot; don't reuse the old token)
+
+
+--------------------------------------------------------------------------
+YOUR TO-DO
+--------------------------------------------------------------------------
+  [ ] Record 3 clips with the phone fixed on a shelf, whole body in view:
+        S1 simulated convulsion, N1 lying still, N2 turning over
+  [ ] Finish downloading the WU-SAHZU-EMU-Video dataset subset
+      (Hugging Face; Apache 2.0; PG files = convulsive seizures,
+       free.mp4 = seizure-free footage) + Label.xlsx
+  [ ] Write test_vidoes/labels.csv:  filename,seizure_start_s,seizure_end_s
+  [ ] Tell me what happens in test6/test7 and at which seconds
+  [ ] Create a new Telegram bot and put its token + chat id in seizure_monitor/.env
+  [ ] Before committing: git rm --cached -r test_vidoes   (keeps the files on disk)
+  [ ] Before the repo ever goes public: the old phone number is in git
+      history (commits e29457a, 715a454) -> needs a history rewrite
+
+
+--------------------------------------------------------------------------
+PLAN TO 17 OCT
+--------------------------------------------------------------------------
+  Oct 5-6    record clips + finish the download                   (you)
+  Oct 7-8    tune the detector + evaluation tool -> real numbers  (Claude)
+  Oct 9-11   buffer / polish dashboard
+  Oct 12     README + slides
+  Oct 13-15  rehearse the demo 3x; record a backup video of a good run
+  Oct 16     rest
+  Oct 17     demo; ask the center for de-identified video-EEG clips
+             and a doctor to advise
+
+
+--------------------------------------------------------------------------
+HOW TO RUN
+--------------------------------------------------------------------------
+  source ~/.venvs/seizure-monitor/bin/activate
+  cd "/run/media/haroon/Local Disk (D:)/Github/AI-Seizure-Detection-System/seizure_monitor"
+  python -m pytest -v                       # run all tests
+  python main.py --source 0 --demo          # webcam, demo mode
+  python main.py --source http://PHONE_IP:8080/video --demo   # phone camera
+  python main.py --source ../test_vidoes/test7.mp4            # a video file
+  python tools/test_alert.py                # test alarm + Telegram
+  python dashboard/app.py                   # review events without camera
+  Dashboard: http://127.0.0.1:8000

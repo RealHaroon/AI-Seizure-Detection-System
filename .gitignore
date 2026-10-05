@@ -13,3 +13,8 @@ seizure_monitor/data/
 
 # CLAUDE.md
 CLAUDE.md
+
+# 
+test_vidoes
+# Test footage and datasets (patient videos must never be committed)
+test_vidoes/
