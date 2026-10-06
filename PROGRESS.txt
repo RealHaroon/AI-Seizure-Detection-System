@@ -1,5 +1,5 @@
 SEIZURE MONITOR - PROGRESS SO FAR
-Updated: 5 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
+Updated: 6 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
 ==========================================================================
 
 WHAT THE SYSTEM DOES (one line)
@@ -95,10 +95,24 @@ PHASE 4 - DASHBOARD  (done)    http://127.0.0.1:8000
 
 
 --------------------------------------------------------------------------
+PHASE 5 - EVALUATION TOOL  (done)
+--------------------------------------------------------------------------
+  [x] tools/evaluate.py VIDEO_FOLDER LABELS.csv [--demo] [--tolerance 10]
+        - sensitivity (caught / labelled seizures) with a 95% confidence interval
+        - detection latency (labelled start -> alert)
+        - false alarms per hour on normal footage
+        - per-video table (incl. % of frames where pose found a person)
+        - printed summary + CSV (data/evaluation_results.csv)
+  [x] Pose results cached per video: first run ~real time, re-scoring after
+      a threshold change takes seconds (75 s -> 1.6 s on test5-7)
+  [x] Unreadable videos (e.g. AV1) reported as errors, not silent zeros
+
+
+--------------------------------------------------------------------------
 TESTING DONE
 --------------------------------------------------------------------------
-  [x] 34 automated tests, all passing (python -m pytest)
-        detector 11, recorder 4, storage 3, alerts 11, dashboard 5
+  [x] 42 automated tests, all passing (python -m pytest)
+        detector 11, recorder 4, storage 3, alerts 11, dashboard 5, evaluation 8
   [x] Pipeline speed: ~28 ms per frame -> 15 fps on this laptop
   [x] Telegram client tested against a local imitation of the Telegram API
       (real bot not yet tested - needs your token)
@@ -118,7 +132,6 @@ TESTING DONE
 NOT DONE YET
 --------------------------------------------------------------------------
   [ ] Detector tuning on real footage   <- most important for the demo
-  [ ] Phase 5: tools/evaluate.py (sensitivity, false alarms/hour, latency)
   [ ] Phase 6: honest README (setup, limits, privacy, disclaimer, roadmap)
   [ ] Slides for the meeting (5-6)
   [ ] Test with a real Telegram bot (make a NEW bot; don't reuse the old token)
@@ -164,4 +177,5 @@ HOW TO RUN
   python main.py --source ../test_vidoes/test7.mp4            # a video file
   python tools/test_alert.py                # test alarm + Telegram
   python dashboard/app.py                   # review events without camera
+  python tools/evaluate.py ../test_vidoes ../test_vidoes/labels.csv   # metrics
   Dashboard: http://127.0.0.1:8000
