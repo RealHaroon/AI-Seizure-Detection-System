@@ -1,0 +1,57 @@
+SEIZURE MONITOR - HOW TO RUN (prototype)
+========================================
+Research prototype, not a medical device. It detects only convulsive (motor)
+seizures, using AI pose estimation (MediaPipe) plus movement-rhythm analysis.
+It is not yet validated on clinical data.
+
+NEEDS
+  - Python 3.12 or newer (python.org). Windows: tick "Add Python to PATH".
+  - A webcam (or a phone camera via the "IP Webcam" Android app).
+  - Internet on the first run only (downloads the ~9 MB pose model).
+  - Optional: ffmpeg, so saved clips play in the browser
+      Windows:  winget install Gyan.FFmpeg
+      Mac:      brew install ffmpeg
+      Ubuntu:   sudo apt install ffmpeg
+
+SETUP (once). Open a terminal inside the seizure_monitor folder:
+
+  Windows (PowerShell or cmd):
+    python -m venv .venv
+    .venv\Scripts\activate
+    pip install -r requirements.txt
+
+  Mac / Linux:
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+
+  (Linux only: if the folder path contains ":" the venv can't be created
+   there; create it elsewhere, e.g. python3 -m venv ~/.venvs/seizure-monitor)
+
+RUN
+  python main.py --source 0 --demo
+    --source 0          the first webcam (try 1 if you have several)
+    --source video.mp4  a video file instead
+    --source http://PHONE_IP:8080/video   a phone running IP Webcam
+    --demo              alert after 3 s of rhythm instead of 8 s (for demos)
+
+  Then open http://127.0.0.1:8000 in a browser (live view, events, review, CSV).
+  In the camera window: s = stop alarm, q = quit.
+
+TRY IT (simulated seizure)
+  Sit back so your head, shoulders and both arms are visible. Jerk BOTH arms
+  together, fast (about 3 times per second), for 10+ seconds. The state goes
+  NORMAL -> RHYTHMIC -> SEIZURE EVENT, the alarm sounds, and a clip appears
+  under "Events" about 30 s after you stop.
+
+TELEGRAM ALERTS (optional)
+  Copy .env.example to .env and put in your own bot token (from @BotFather)
+  and chat id. Without it, only the local alarm sounds.
+  Test without a seizure:  python tools/test_alert.py
+
+TESTS
+  pip install -r requirements-dev.txt
+  python -m pytest
+
+Settings (thresholds, alarm, privacy, dashboard) are in config.yaml.
+Tested on Ubuntu 26.04 with Python 3.14, CPU only.

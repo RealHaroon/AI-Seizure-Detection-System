@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Event {{ ev.id }} · Seizure Monitor{% endblock %}
 {% block content %}
-<p><a href="{{ url_for('events_page') }}">← All events</a></p>
+<p><a href="{{ url_for('events_page') }}" title="Back to the list of events">← All events</a></p>
 
 <div class="detail-grid">
   <section class="card">
@@ -34,10 +34,13 @@
       <textarea id="note" name="note" rows="4"
         placeholder="e.g. GTC, ~70 s, matches patient history">{{ ev.reviewer_note }}</textarea>
       <div class="buttons">
-        <button name="label" value="real_seizure" class="button danger">Real seizure</button>
-        <button name="label" value="false_alarm" class="button secondary">False alarm</button>
+        <button name="label" value="real_seizure" class="button danger"
+          title="Confirm this was a real seizure. Saves the label and your note to the seizure diary">Real seizure</button>
+        <button name="label" value="false_alarm" class="button secondary"
+          title="Mark this as not a seizure (e.g. normal movement). Saves the label and your note; helps measure false alarms">False alarm</button>
         {% if ev.review_label != 'unreviewed' %}
-        <button name="label" value="unreviewed" class="button ghost">Reset to unreviewed</button>
+        <button name="label" value="unreviewed" class="button ghost"
+          title="Undo the label and mark this event as needing review again (your note is kept)">Reset to unreviewed</button>
         {% endif %}
       </div>
     </form>

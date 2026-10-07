@@ -4,7 +4,8 @@
 <section class="card">
   <div class="card-head">
     <h1>Events</h1>
-    <a class="button secondary" href="{{ url_for('export_csv') }}">Export seizure diary (CSV)</a>
+    <a class="button secondary" href="{{ url_for('export_csv') }}"
+       title="Download all events (date, time, duration, label, note) as a CSV file that opens in Excel">Export seizure diary (CSV)</a>
   </div>
   <div class="counts">
     <span class="label label-unreviewed">{{ counts.unreviewed }} need review</span>
@@ -25,7 +26,8 @@
         <td data-th="Duration">{{ e.duration }}</td>
         <td data-th="Confidence*">{{ e.confidence_text }}</td>
         <td data-th="Label"><span class="label label-{{ e.review_label }}">{{ e.label_text }}</span></td>
-        <td><a class="button small" href="{{ url_for('event_page', event_id=e.id) }}">Review</a></td>
+        <td><a class="button small" href="{{ url_for('event_page', event_id=e.id) }}"
+             title="Watch this event's clip and mark it as a real seizure or a false alarm">Review</a></td>
       </tr>
       {% endfor %}
     </tbody>

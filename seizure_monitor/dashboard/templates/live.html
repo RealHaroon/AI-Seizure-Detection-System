@@ -30,13 +30,13 @@
 <section class="card">
   <div class="card-head">
     <h2>Recent events</h2>
-    <a href="{{ url_for('events_page') }}">All events →</a>
+    <a href="{{ url_for('events_page') }}" title="See the full list of detected events">All events →</a>
   </div>
   {% if recent %}
   <ul class="event-list">
     {% for e in recent %}
     <li>
-      <a href="{{ url_for('event_page', event_id=e.id) }}">
+      <a href="{{ url_for('event_page', event_id=e.id) }}" title="Open this event to watch its clip and label it">
         <span><strong>{{ e.date }}</strong> · {{ e.time }}</span>
         <span class="muted">{{ e.duration }}</span>
         <span class="label label-{{ e.review_label }}">{{ e.label_text }}</span>

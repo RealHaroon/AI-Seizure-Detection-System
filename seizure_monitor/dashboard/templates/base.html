@@ -8,13 +8,16 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="{{ url_for('live_page') }}">
+    <a class="brand" href="{{ url_for('live_page') }}" title="Go to the live view">
       <span class="brand-mark" aria-hidden="true"></span>Seizure Monitor
     </a>
     <nav>
-      <a href="{{ url_for('live_page') }}" class="{{ 'active' if page == 'live' }}">Live</a>
-      <a href="{{ url_for('events_page') }}" class="{{ 'active' if page == 'events' }}">Events</a>
-      <a href="{{ url_for('export_csv') }}">Export diary</a>
+      <a href="{{ url_for('live_page') }}" class="{{ 'active' if page == 'live' }}"
+         title="Live camera view with the current detector state and alert status">Live</a>
+      <a href="{{ url_for('events_page') }}" class="{{ 'active' if page == 'events' }}"
+         title="All detected events: open one to watch its clip and label it">Events</a>
+      <a href="{{ url_for('export_csv') }}"
+         title="Download all events as a CSV seizure diary (opens in Excel) to share with the doctor">Export diary</a>
     </nav>
   </header>
 
