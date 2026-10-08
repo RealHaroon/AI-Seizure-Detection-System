@@ -16,7 +16,7 @@
   {% if events %}
   <table class="events">
     <thead>
-      <tr><th>Date</th><th>Time</th><th>Duration</th><th>Confidence*</th><th>Label</th><th></th></tr>
+      <tr><th>Date</th><th>Time</th><th>Duration</th><th>Detected by</th><th>Confidence*</th><th>Label</th><th></th></tr>
     </thead>
     <tbody>
       {% for e in events %}
@@ -24,6 +24,7 @@
         <td data-th="Date">{{ e.date }}</td>
         <td data-th="Time">{{ e.time }}</td>
         <td data-th="Duration">{{ e.duration }}</td>
+        <td data-th="Detected by">{{ e.trigger_text }}</td>
         <td data-th="Confidence*">{{ e.confidence_text }}</td>
         <td data-th="Label"><span class="label label-{{ e.review_label }}">{{ e.label_text }}</span></td>
         <td><a class="button small" href="{{ url_for('event_page', event_id=e.id) }}"
@@ -32,7 +33,7 @@
       {% endfor %}
     </tbody>
   </table>
-  <p class="muted small">* Heuristic 0–1 score of how strong and widespread the rhythmic movement was.
+  <p class="muted small">* Heuristic 0–1 score of how strong the movement or rhythm was.
     It is not a probability that a seizure occurred.</p>
   {% else %}
   <p class="muted">No events recorded yet.</p>

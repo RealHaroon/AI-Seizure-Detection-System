@@ -6,12 +6,15 @@ import cv2
 import numpy as np
 
 from .detector import State
+from .motion import bed_pixels
 from .pose import SKELETON_CONNECTIONS
 
 # BGR colours
 GREEN, ORANGE, RED, GREY, WHITE = (80, 200, 80), (0, 165, 255), (50, 50, 230), (140, 140, 140), (235, 235, 235)
-STATE_COLOUR = {State.NORMAL: GREEN, State.RHYTHMIC: ORANGE, State.SEIZURE_EVENT: RED}
+STATE_COLOUR = {State.NORMAL: GREEN, State.RHYTHMIC: ORANGE, State.MOVEMENT: ORANGE, State.SEIZURE_EVENT: RED}
+CYAN = (200, 180, 40)
 PANEL_W = 330
+PANEL_MIN_H = 600
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 
 
@@ -34,6 +37,14 @@ def draw_skeleton(frame, result, out):
         cv2.circle(frame, (int(x), int(y)), 6, colour, -1)
 
 
+def draw_bed_area(frame, bed_area, active=False):
+    """Outline of the region detector A watches (only movement inside it counts)."""
+    h, w = frame.shape[:2]
+    x0, y0, x1, y1 = bed_pixels(bed_area, w, h)
+    cv2.rectangle(frame, (x0 + 1, y0 + 1), (x1 - 2, y1 - 2), ORANGE if active else CYAN, 2)
+    text(frame, "bed area", x0 + 6, y1 - 8, ORANGE if active else CYAN, 0.45, 1)
+
+
 def draw_clip_banner(frame, out, wall_time: float, source_name: str):
     """Small header for saved clips: when, where, and what the detector thought at that moment."""
     h, w = frame.shape[:2]
@@ -45,10 +56,15 @@ def draw_clip_banner(frame, out, wall_time: float, source_name: str):
     text(frame, label, w - tw - 8, 18, STATE_COLOUR[out.state], 0.45, 1)
 
 
-def render_live(frame, result, out, cfg, fps, recording=False, alert=None):
-    """Live tuning view: camera frame with skeleton, plus a feature panel on the right."""
+def render_live(frame, result, out, cfg, mcfg, fps, recording=False, alert=None):
+    """Live tuning view: camera frame with skeleton and bed area, plus a feature panel on the right.
+
+    out is the fused output (monitor/fusion.py); cfg/mcfg are the rhythm and motion detector configs.
+    """
     draw_skeleton(frame, result, out)
-    h = max(frame.shape[0], 480)
+    if out.motion is not None:
+        draw_bed_area(frame, mcfg.bed_area, out.motion.above)
+    h = max(frame.shape[0], PANEL_MIN_H)
     canvas = np.zeros((h, frame.shape[1] + PANEL_W, 3), np.uint8)
     canvas[:frame.shape[0], :frame.shape[1]] = frame
     if out.state == State.SEIZURE_EVENT and int(time.monotonic() * 3) % 2 == 0:
@@ -56,7 +72,7 @@ def render_live(frame, result, out, cfg, fps, recording=False, alert=None):
     if recording:
         cv2.circle(canvas, (frame.shape[1] - 50, 22), 7, RED, -1)
         text(canvas, "REC", frame.shape[1] - 38, 27, RED, 0.5, 2)
-    _draw_panel(canvas, frame.shape[1], out, cfg, fps)
+    _draw_panel(canvas, frame.shape[1], out, cfg, mcfg, fps)
     if alert:
         _draw_alert_status(canvas, frame.shape[1] + 12, canvas.shape[0] - 60, alert)
     return canvas
@@ -73,13 +89,37 @@ def _draw_alert_status(img, x, y, alert):
         text(img, "Alert sent - waiting for response", x, y - 22, ORANGE)
 
 
-def _draw_panel(img, x0, out, cfg, fps):
+def _draw_panel(img, x0, fused, cfg, mcfg, fps):
     x, y = x0 + 12, 30
-    colour = STATE_COLOUR[out.state]
+    colour = STATE_COLOUR[fused.state]
     cv2.rectangle(img, (x - 4, y - 22), (x0 + PANEL_W - 10, y + 10), colour, -1)
-    text(img, out.state.value, x + 4, y + 2, (255, 255, 255), 0.7, 2)
+    text(img, fused.state.value, x + 4, y + 2, (255, 255, 255), 0.7, 2)
+    bar_w = PANEL_W - 30
 
-    y += 34
+    # --- Detector A: movement in the bed area
+    y += 32
+    text(img, "A  Movement in bed area", x, y, CYAN, 0.5, 1)
+    m = fused.motion
+    if m is None:
+        y += 20
+        text(img, "off (motion.enabled: false)", x, y, GREY)
+    else:
+        y += 16
+        frac = min(m.intensity / (2 * mcfg.min_speed), 1.0)        # threshold sits at the middle of the bar
+        cv2.rectangle(img, (x, y), (x + bar_w, y + 12), (60, 60, 60), -1)
+        cv2.rectangle(img, (x, y), (x + int(bar_w * frac), y + 12), RED if m.above else CYAN, -1)
+        cv2.line(img, (x + bar_w // 2, y - 3), (x + bar_w // 2, y + 15), WHITE, 1)
+        y += 30
+        text(img, f"speed {m.intensity:.3f} (thr {mcfg.min_speed})  sustained {m.active_fraction:4.0%}", x, y)
+        if mcfg.bed_area is None:
+            y += 18
+            text(img, "bed area not set: whole frame counts", x, y, ORANGE, 0.4)
+
+    # --- Detector B: rhythmic limbs (pose)
+    out = fused.pose
+    y += 30
+    text(img, "B  Rhythmic limbs (pose)", x, y, CYAN, 0.5, 1)
+    y += 22
     if not out.body_visible:
         text(img, "No person / shoulders not visible", x, y, ORANGE)
     elif out.warming_up:
@@ -89,22 +129,18 @@ def _draw_panel(img, x0, out, cfg, fps):
                   f"  (need {cfg.min_rhythmic_limbs})", x, y)
 
     # Onset progress: how long rhythm has persisted vs how long it must persist.
-    y += 24
-    frac = 1.0 if out.state == State.SEIZURE_EVENT else min(out.rhythm_duration_s / out.onset_s, 1.0)
-    bar_w = PANEL_W - 30
-    cv2.rectangle(img, (x, y - 10), (x + bar_w, y + 4), (60, 60, 60), -1)
-    cv2.rectangle(img, (x, y - 10), (x + int(bar_w * frac), y + 4), colour, -1)
-    y += 20
+    y += 16
+    frac = 1.0 if out.current_event else min(out.rhythm_duration_s / out.onset_s, 1.0)
+    cv2.rectangle(img, (x, y), (x + bar_w, y + 12), (60, 60, 60), -1)
+    cv2.rectangle(img, (x, y), (x + int(bar_w * frac), y + 12), ORANGE if frac < 1 else RED, -1)
+    y += 30
     text(img, f"Rhythm {out.rhythm_duration_s:4.1f}s / onset {out.onset_s:.1f}s", x, y)
-    y += 20
-    conf = out.current_event.confidence if out.current_event else out.window_confidence
-    text(img, f"Confidence (heuristic): {conf:.2f}", x, y)
 
     # Per-limb features: show the limb's strongest point.
-    y += 30
+    y += 24
     text(img, "limb       band  prom   amp   Hz", x, y, GREY)
     for limb, pts in cfg.limbs.items():
-        y += 20
+        y += 19
         feats = [out.points[p] for p in pts if p in out.points]
         if not feats:
             text(img, f"{limb:<10} --", x, y, GREY)
@@ -113,16 +149,14 @@ def _draw_panel(img, x0, out, cfg, fps):
         prom = ">999" if f.prominence > 999 else f"{f.prominence:4.0f}"
         text(img, f"{limb:<10} {f.band_ratio:4.2f}  {prom}  {f.amplitude:4.2f}  {f.peak_hz:3.1f}",
              x, y, RED if f.rhythmic else WHITE)
-
-    y += 28
-    text(img, "thresholds:", x, y, GREY)
     y += 18
-    text(img, f"band>={cfg.min_band_ratio}  prom>={cfg.min_prominence}  amp>={cfg.min_amplitude}", x, y, GREY)
-    y += 18
-    text(img, f"band {cfg.band_hz[0]}-{cfg.band_hz[1]} Hz, window {cfg.window_s}s", x, y, GREY)
+    text(img, f"thr: band>={cfg.min_band_ratio} prom>={cfg.min_prominence} amp>={cfg.min_amplitude}", x, y, GREY, 0.4)
 
+    # --- Event
     y += 30
-    if out.current_event:
-        text(img, f"Event running {out.t - out.current_event.start:.0f}s", x, y, RED, 0.5, 1)
+    if fused.current_event:
+        e = fused.current_event
+        text(img, f"Event running {fused.t - e.start:.0f}s  ({e.trigger})", x, y, RED, 0.5, 1)
+        y += 20
+        text(img, f"Confidence (heuristic): {e.confidence:.2f}", x, y)
     text(img, f"{fps:4.1f} fps   s: stop alarm   q: quit", x, img.shape[0] - 12, GREY)
-    text(img, "amp = RMS movement in shoulder widths", x, img.shape[0] - 32, GREY, 0.38)

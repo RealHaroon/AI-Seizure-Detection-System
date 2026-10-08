@@ -1,5 +1,5 @@
 SEIZURE MONITOR - PROGRESS SO FAR
-Updated: 6 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
+Updated: 8 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
 ==========================================================================
 
 WHAT THE SYSTEM DOES (one line)
@@ -109,9 +109,26 @@ PHASE 5 - EVALUATION TOOL  (done)
 
 
 --------------------------------------------------------------------------
+DETECTOR A - MOVEMENT IN BED AREA  (done, 8 Oct)
+--------------------------------------------------------------------------
+  [x] Why: on real hospital videos the pose detector caught 0/5 (it tracked
+      nurses, legs were under blankets, movement was mostly slow and irregular)
+  [x] monitor/motion.py  - optical flow inside the bed area, no skeleton needed
+  [x] monitor/fusion.py  - alert if EITHER detector fires; event records which
+  [x] tools/set_bed_area.py - drag a box around the bed once per camera
+  [x] Live window, dashboard, CSV and alerts show "detected by"
+  [x] Result on WU-SAHZU hospital videos (pat03 + pat05):
+        4/5 seizures caught (95% CI 38-96%), median alert 5.5 s after onset,
+        0 false alarms in 11 min of normal footage
+        (very small test set: first indication, not validation)
+  [ ] Still needed: normal BED footage (turning over, getting up) to measure
+      false alarms properly; pat07 re-download
+
+
+--------------------------------------------------------------------------
 TESTING DONE
 --------------------------------------------------------------------------
-  [x] 42 automated tests, all passing (python -m pytest)
+  [x] 52 automated tests, all passing (python -m pytest)
         detector 11, recorder 4, storage 3, alerts 11, dashboard 5, evaluation 8
   [x] Pipeline speed: ~28 ms per frame -> 15 fps on this laptop
   [x] Telegram client tested against a local imitation of the Telegram API

@@ -54,6 +54,23 @@ detector:
     band_ratio_full: 0.95  # band_ratio at which the band score reaches 1
     prominence_full: 30.0  # prominence at which the prominence score reaches 1
 
+# Detector A: sustained intense movement inside the bed area (optical flow, no pose needed).
+# Works through blankets and ignores people beside the bed. See monitor/motion.py.
+motion:
+  enabled: true
+  bed_area: [0.269, 0.069, 0.580, 0.972]           # [x0, y0, x1, y1] as fractions of the frame (0-1). Set it with
+                           # tools/set_bed_area.py. null = whole frame (less specific: anyone moving counts)
+  flow_width: 160          # bed area is resized to this width before optical flow (cost vs detail)
+  grid: 4                  # bed area split into grid x grid cells
+  top_cells: 4             # intensity = mean speed of the N most-moving cells (convulsions may involve part of the bed)
+  min_speed: 0.04          # bed widths per second counted as "intense". Normal footage stayed below ~0.01
+  sustain_s: 5.0           # intense movement must fill most of this long a window to start an event
+  demo_sustain_s: 3.0      # used instead of sustain_s with --demo
+  sustain_fraction: 0.8    # "most" = this share of the window (real movement has brief pauses).
+                           # Earliest alert = sustain_s x sustain_fraction after movement starts (4 s)
+  end_hold_s: 5.0          # event ends after this long without intense movement
+  confidence_full_speed: 0.15  # heuristic confidence reaches 1 at this mean speed (NOT a probability)
+
 monitor:
   source_name: Bedroom camera   # shown in clips, the event log and (later) alerts
 

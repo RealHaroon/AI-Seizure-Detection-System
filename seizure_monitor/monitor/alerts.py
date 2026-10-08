@@ -262,7 +262,7 @@ class AlertManager:
 
     # ---- called from the detection loop (must be fast, never raise) ----
 
-    def on_event_start(self, start_wall: float, snapshot: bytes | None):
+    def on_event_start(self, start_wall: float, snapshot: bytes | None, reason: str = ""):
         with self._lock:
             inc = self._incident
             if inc and not inc.ended:
@@ -280,7 +280,7 @@ class AlertManager:
         self._send(inc.key, f"🚨 Possible seizure detected\n"
                             f"Camera: {self.source}\n"
                             f"Time: {_clock_str(start_wall)}\n"
-                            f"Rhythmic convulsive movement detected. Please check on them now.\n"
+                            f"Detected: {reason or 'convulsive movement'}. Please check on them now.\n"
                             f"(Automatic alert from the camera monitor.)", snapshot)
 
     def on_event_end(self, end_wall: float):

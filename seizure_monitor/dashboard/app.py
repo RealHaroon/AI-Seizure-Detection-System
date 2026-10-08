@@ -27,6 +27,7 @@ if __package__ in (None, ""):
 import cv2
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_from_directory, url_for
 
+from monitor.fusion import TRIGGER_TEXT
 from monitor.storage import REVIEW_LABELS, EventStore
 
 LABEL_TEXT = {"unreviewed": "Needs review", "real_seizure": "Real seizure", "false_alarm": "False alarm"}
@@ -81,6 +82,7 @@ def create_app(store: EventStore, data_dir: Path, live: LiveState | None = None,
         ev["duration"] = _fmt_duration(ev["duration_s"]) if ev["end_time"] else "In progress"
         ev["confidence_text"] = f"{ev['confidence']:.2f}" if ev["confidence"] is not None else "–"
         ev["label_text"] = LABEL_TEXT[ev["review_label"]]
+        ev["trigger_text"] = TRIGGER_TEXT.get(ev.get("trigger") or "", "–")
         clip = data_dir / ev["clip_path"] if ev["clip_path"] else None
         ev["clip_available"] = bool(clip and clip.exists())
         return ev
@@ -122,13 +124,14 @@ def create_app(store: EventStore, data_dir: Path, live: LiveState | None = None,
         out = io.StringIO()
         w = csv.writer(out)
         w.writerow(["event_id", "date", "start_time", "end_time", "duration_s", "confidence_heuristic",
-                    "review_label", "reviewer_note", "camera"])
+                    "detected_by", "review_label", "reviewer_note", "camera"])
         for e in reversed(store.list_events()):     # oldest first, like a diary
             start = datetime.fromisoformat(e["start_time"])
             end = datetime.fromisoformat(e["end_time"]).strftime("%H:%M:%S") if e["end_time"] else ""
             w.writerow([e["id"], start.strftime("%Y-%m-%d"), start.strftime("%H:%M:%S"), end,
                         f"{e['duration_s']:.0f}" if e["duration_s"] is not None else "",
                         f"{e['confidence']:.2f}" if e["confidence"] is not None else "",
+                        TRIGGER_TEXT.get(e.get("trigger") or "", ""),
                         e["review_label"], e["reviewer_note"], e["source"]])
         # utf-8-sig adds a BOM so Excel shows non-English notes (e.g. Urdu) correctly.
         filename = f"seizure_diary_{datetime.now():%Y%m%d}.csv"

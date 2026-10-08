@@ -77,7 +77,7 @@ nav a.active { background: var(--neutral-bg); color: var(--text); }
 }
 .state-unknown { background: var(--neutral-bg); color: var(--neutral); }
 .state-NORMAL { background: var(--ok-bg); color: var(--ok); }
-.state-RHYTHMIC { background: var(--warn-bg); color: var(--warn); }
+.state-RHYTHMIC, .state-INTENSE { background: var(--warn-bg); color: var(--warn); }
 .state-SEIZURE { background: var(--danger); color: #fff; animation: pulse 1s infinite alternate; }
 @keyframes pulse { from { opacity: 1; } to { opacity: .75; } }
 @media (prefers-reduced-motion: reduce) { .state-SEIZURE { animation: none; } }

@@ -11,12 +11,13 @@
     <div id="state" class="state state-unknown">Connecting…</div>
     <dl class="facts">
       <div><dt>Camera</dt><dd id="source">–</dd></div>
+      <div><dt>Movement in bed</dt><dd id="movement">–</dd></div>
       <div><dt>Rhythm</dt><dd id="rhythm">–</dd></div>
       <div><dt>Person in view</dt><dd id="body">–</dd></div>
     </dl>
     <div id="alert" class="alert hidden"></div>
-    <p class="muted small">Updates every second. Movement is analysed for rhythmic jerking in several limbs
-      at once; an event starts only after it persists for several seconds.</p>
+    <p class="muted small">Updates every second. An event starts when strong movement inside the bed area
+      persists for several seconds, or when several limbs jerk rhythmically.</p>
   </section>
 </div>
 {% else %}

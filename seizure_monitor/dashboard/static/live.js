@@ -20,6 +20,8 @@
         stateEl.textContent = s.state;
       }
       $("source").textContent = s.source || "–";
+      $("movement").textContent = s.movement == null ? "off" :
+        `${s.movement.toFixed(3)} (alert level ${s.movement_threshold})`;
       $("rhythm").textContent = s.rhythm_s != null ? `${s.rhythm_s.toFixed(1)} s / ${s.onset_s.toFixed(0)} s needed` : "–";
       $("body").textContent = s.body_visible == null ? "–" : (s.body_visible ? "Yes" : "No");
 

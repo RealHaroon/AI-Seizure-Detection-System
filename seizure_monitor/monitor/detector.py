@@ -40,6 +40,7 @@ _EPS = 1e-12
 class State(enum.Enum):
     NORMAL = "NORMAL"
     RHYTHMIC = "RHYTHMIC"            # rhythm seen, but not yet long enough to be an event
+    MOVEMENT = "INTENSE MOVEMENT"    # (fused display only) strong movement in bed, not yet sustained
     SEIZURE_EVENT = "SEIZURE EVENT"
 
 

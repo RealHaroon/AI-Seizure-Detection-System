@@ -16,12 +16,13 @@ REVIEW_LABELS = ("unreviewed", "real_seizure", "false_alarm")
 SCHEMA = f"""
 CREATE TABLE IF NOT EXISTS events (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    start_time    TEXT NOT NULL,          -- ISO 8601 local time when rhythmic movement began
+    start_time    TEXT NOT NULL,          -- ISO 8601 local time when the movement began
     end_time      TEXT,                   -- NULL while the event is still in progress
     duration_s    REAL,
     confidence    REAL,                   -- heuristic 0-1 strength score, not a probability
     clip_path     TEXT,                   -- relative to the data directory
     source        TEXT NOT NULL,          -- camera name from config
+    trigger       TEXT,                   -- which detector(s): rhythmic / movement / rhythmic+movement
     review_label  TEXT NOT NULL DEFAULT 'unreviewed'
                   CHECK (review_label IN {REVIEW_LABELS}),
     reviewer_note TEXT NOT NULL DEFAULT ''
@@ -37,6 +38,9 @@ class EventStore:
             # WAL lets the dashboard read while the monitor writes, without "database is locked" errors.
             db.execute("PRAGMA journal_mode=WAL")
             db.executescript(SCHEMA)
+            # Databases created before the trigger column existed: add it in place, keeping all events.
+            if "trigger" not in {r[1] for r in db.execute("PRAGMA table_info(events)")}:
+                db.execute("ALTER TABLE events ADD COLUMN trigger TEXT")
 
     def _connect(self):
         # A short-lived connection per call keeps this safe to use from any thread.
@@ -44,17 +48,21 @@ class EventStore:
         db.row_factory = sqlite3.Row
         return db
 
-    def start_event(self, start_time: str, confidence: float, clip_path: str | None, source: str) -> int:
+    def start_event(self, start_time: str, confidence: float, clip_path: str | None, source: str,
+                    trigger: str | None = None) -> int:
         with closing(self._connect()) as db, db:
             cur = db.execute(
-                "INSERT INTO events (start_time, confidence, clip_path, source) VALUES (?, ?, ?, ?)",
-                (start_time, confidence, clip_path, source))
+                "INSERT INTO events (start_time, confidence, clip_path, source, trigger) VALUES (?, ?, ?, ?, ?)",
+                (start_time, confidence, clip_path, source, trigger))
             return cur.lastrowid
 
-    def end_event(self, event_id: int, end_time: str, duration_s: float, confidence: float):
+    def end_event(self, event_id: int, end_time: str, duration_s: float, confidence: float,
+                  trigger: str | None = None):
+        # The trigger can grow during an event (e.g. movement first, rhythm joins later).
         with closing(self._connect()) as db, db:
-            db.execute("UPDATE events SET end_time = ?, duration_s = ?, confidence = ? WHERE id = ?",
-                       (end_time, duration_s, confidence, event_id))
+            db.execute("UPDATE events SET end_time = ?, duration_s = ?, confidence = ?, "
+                       "trigger = COALESCE(?, trigger) WHERE id = ?",
+                       (end_time, duration_s, confidence, trigger, event_id))
 
     def list_events(self) -> list[dict]:
         with closing(self._connect()) as db:
