@@ -72,6 +72,7 @@ class VideoResult:
     detected: int = 0                       # labelled seizures caught
     latencies: list = field(default_factory=list)
     false_alarms: int = 0
+    repeats: int = 0                        # extra detections inside an already-caught seizure (not false alarms)
 
 
 def load_labels(path: Path) -> dict[str, list]:
@@ -120,7 +121,11 @@ def score_video(r: VideoResult, tolerance_s: float) -> VideoResult:
                 r.detected += 1
                 r.latencies.append(d.detected_at - s_start)
                 break
-    r.false_alarms = len(r.detections) - len(used)
+    # A further detection inside a seizure that was already caught is the same episode re-triggering
+    # (the live system merges it into the same alert via the cooldown), so it is not a false alarm.
+    r.repeats = sum(1 for i, d in enumerate(r.detections) if i not in used and any(
+        s - tolerance_s <= d.detected_at <= e + tolerance_s for s, e in r.seizures))
+    r.false_alarms = len(r.detections) - len(used) - r.repeats
     return r
 
 
@@ -154,6 +159,7 @@ def summarize(results: list[VideoResult]) -> dict:
         "false_alarms_normal": fa_normal,
         "false_alarms_per_hour": fa_normal / normal_h if normal_h > 0 else math.nan,
         "extra_detections_in_seizure_videos": sum(r.false_alarms for r in results if r.seizures),
+        "repeat_detections": sum(r.repeats for r in results),
     }
 
 
@@ -280,8 +286,9 @@ def print_report(results: list[VideoResult], s: dict, tolerance_s: float, settin
           f"(range {_fmt(s['latency_range_s'][0])} to {_fmt(s['latency_range_s'][1])} s)")
     print(f"  False alarms           : {s['false_alarms_normal']} in {s['normal_hours']:.2f} h of normal footage"
           + (f" = {s['false_alarms_per_hour']:.2f} per hour" if s["normal_hours"] > 0 else " (no normal videos)"))
-    print(f"  Extra detections in seizure videos (outside labelled seizures): "
+    print(f"  False alarms in seizure videos (outside labelled seizures): "
           f"{s['extra_detections_in_seizure_videos']}")
+    print(f"  Repeat detections within an already-caught seizure (not false alarms): {s['repeat_detections']}")
     if s["seizures"] < 20 or s["normal_hours"] < 8:
         print("  NOTE: small test set: treat these numbers as a first indication, not a validated result.")
     low_pose = [r.filename for r in results if r.person_fraction < 0.7]

@@ -1,5 +1,5 @@
 SEIZURE MONITOR - PROGRESS SO FAR
-Updated: 8 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
+Updated: 9 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
 ==========================================================================
 
 WHAT THE SYSTEM DOES (one line)
@@ -117,18 +117,28 @@ DETECTOR A - MOVEMENT IN BED AREA  (done, 8 Oct)
   [x] monitor/fusion.py  - alert if EITHER detector fires; event records which
   [x] tools/set_bed_area.py - drag a box around the bed once per camera
   [x] Live window, dashboard, CSV and alerts show "detected by"
-  [x] Result on WU-SAHZU hospital videos (pat03 + pat05):
-        4/5 seizures caught (95% CI 38-96%), median alert 5.5 s after onset,
-        0 false alarms in 11 min of normal footage
-        (very small test set: first indication, not validation)
-  [ ] Still needed: normal BED footage (turning over, getting up) to measure
-      false alarms properly; pat07 re-download
+  [x] RESULT (9 Oct) on WU-SAHZU hospital videos, 10 seizures / 6 patients
+      (pat03, 05, 07, 13, 14):
+        9/10 seizures caught = 90% (95% CI 60-98%)
+        0 false alarms in 22.5 min of normal footage
+          (11 min seizure-free video + the time before each seizure)
+        median alert 27 s after CLINICAL onset (range -6 to 56 s); onset is
+          the focal start, convulsions come later, so the time from
+          convulsions starting is likely shorter (not labelled)
+        settings were chosen on pat03/05 BEFORE pat07/13/14 were added;
+          those 5 new seizures: 5/5 caught (independent check)
+        missed: pat05 Sz1 (movement hovered just at the threshold)
+        all detections came from detector A (movement); the rhythm detector
+          contributed nothing on hospital video (pose tracking <70% on 5 videos)
+        small test set: first indication, not clinical validation
+  [ ] Still needed: normal BED footage (turning over, getting up, someone
+      making the bed) to measure false alarms properly
 
 
 --------------------------------------------------------------------------
 TESTING DONE
 --------------------------------------------------------------------------
-  [x] 52 automated tests, all passing (python -m pytest)
+  [x] 53 automated tests, all passing (python -m pytest)
         detector 11, recorder 4, storage 3, alerts 11, dashboard 5, evaluation 8
   [x] Pipeline speed: ~28 ms per frame -> 15 fps on this laptop
   [x] Telegram client tested against a local imitation of the Telegram API

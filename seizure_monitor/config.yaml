@@ -58,7 +58,7 @@ detector:
 # Works through blankets and ignores people beside the bed. See monitor/motion.py.
 motion:
   enabled: true
-  bed_area: [0.269, 0.069, 0.580, 0.972]           # [x0, y0, x1, y1] as fractions of the frame (0-1). Set it with
+  bed_area: [0.106, 0.056, 0.977, 0.975]           # [x0, y0, x1, y1] as fractions of the frame (0-1). Set it with
                            # tools/set_bed_area.py. null = whole frame (less specific: anyone moving counts)
   flow_width: 160          # bed area is resized to this width before optical flow (cost vs detail)
   grid: 4                  # bed area split into grid x grid cells

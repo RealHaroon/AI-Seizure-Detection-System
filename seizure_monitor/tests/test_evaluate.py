@@ -78,3 +78,8 @@ def test_end_to_end_on_synthetic_keypoints():
     times, kps = _track(still, duration=120)
     kps[200:260] = np.nan                                 # person briefly out of view
     assert run_detector(times, kps, cfg, False) == []
+
+
+def test_repeat_detection_inside_caught_seizure_is_not_a_false_alarm():
+    r = score_video(VideoResult("S.mp4", 300, [(50, 150)], detections=[det(60), det(120), det(250)]), tolerance_s=10)
+    assert (r.detected, r.repeats, r.false_alarms) == (1, 1, 1)     # 120 s repeats; 250 s is a real false alarm
