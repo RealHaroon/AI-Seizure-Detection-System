@@ -73,6 +73,7 @@ class VideoResult:
     latencies: list = field(default_factory=list)
     false_alarms: int = 0
     repeats: int = 0                        # extra detections inside an already-caught seizure (not false alarms)
+    nonseizure_s: float = 0.0               # footage outside labelled seizures (+/- tolerance): false-alarm exposure
 
 
 def load_labels(path: Path) -> dict[str, list]:
@@ -126,6 +127,14 @@ def score_video(r: VideoResult, tolerance_s: float) -> VideoResult:
     r.repeats = sum(1 for i, d in enumerate(r.detections) if i not in used and any(
         s - tolerance_s <= d.detected_at <= e + tolerance_s for s, e in r.seizures))
     r.false_alarms = len(r.detections) - len(used) - r.repeats
+    # Seizure-free time in this video: the full length minus each seizure (with tolerance), overlaps merged.
+    covered, last = 0.0, 0.0
+    for s_start, s_end in sorted((max(0.0, a - tolerance_s), min(r.duration_s, b + tolerance_s)) for a, b in r.seizures):
+        s_start = max(s_start, last)
+        if s_end > s_start:
+            covered += s_end - s_start
+            last = s_end
+    r.nonseizure_s = max(0.0, r.duration_s - covered)
     return r
 
 
@@ -144,8 +153,10 @@ def summarize(results: list[VideoResult]) -> dict:
     caught = sum(r.detected for r in results)
     latencies = [x for r in results for x in r.latencies]
     normal = [r for r in results if not r.seizures]
-    normal_h = sum(r.duration_s for r in normal) / 3600
-    fa_normal = sum(r.false_alarms for r in normal)
+    # False alarms are counted over ALL seizure-free footage: normal videos plus the time before/between
+    # seizures in seizure videos (that is normal footage too).
+    normal_h = sum(r.nonseizure_s for r in results) / 3600
+    fa_normal = sum(r.false_alarms for r in results)
     return {
         "videos": len(results),
         "seizures": n_seiz,
@@ -184,7 +195,7 @@ def extract_track(video: Path, cfg: dict, bed_area, cache_dir: Path):
     from monitor.capture import VideoSource            # imported here: scoring works without OpenCV/MediaPipe
     from monitor.motion import BedFlow
     from monitor.pose import PoseEstimator, ensure_model
-    pose = PoseEstimator(cfg["pose"], ensure_model(cfg["pose"], BASE_DIR))
+    pose = PoseEstimator(cfg["pose"], ensure_model(cfg["pose"], BASE_DIR), bed_area=bed_area)
     flow = BedFlow(mcfg)
     src = VideoSource(str(video), cfg["capture"]["width"], cfg["capture"]["process_fps"])
     import cv2
@@ -284,9 +295,9 @@ def print_report(results: list[VideoResult], s: dict, tolerance_s: float, settin
           + (f" = {s['sensitivity']:.0%} (95% CI {lo:.0%}–{hi:.0%})" if s["seizures"] else ""))
     print(f"  Detection latency      : median {_fmt(s['latency_median_s'])} s "
           f"(range {_fmt(s['latency_range_s'][0])} to {_fmt(s['latency_range_s'][1])} s)")
-    print(f"  False alarms           : {s['false_alarms_normal']} in {s['normal_hours']:.2f} h of normal footage"
-          + (f" = {s['false_alarms_per_hour']:.2f} per hour" if s["normal_hours"] > 0 else " (no normal videos)"))
-    print(f"  False alarms in seizure videos (outside labelled seizures): "
+    print(f"  False alarms           : {s['false_alarms_normal']} in {s['normal_hours'] * 60:.1f} min of seizure-free footage"
+          + (f" = {s['false_alarms_per_hour']:.2f} per hour" if s["normal_hours"] > 0 else " (no seizure-free footage)"))
+    print(f"    of which in seizure videos, outside the labelled seizures: "
           f"{s['extra_detections_in_seizure_videos']}")
     print(f"  Repeat detections within an already-caught seizure (not false alarms): {s['repeat_detections']}")
     if s["seizures"] < 20 or s["normal_hours"] < 8:
@@ -315,6 +326,40 @@ def write_csv(path: Path, results: list[VideoResult], s: dict):
                     "false_alarms_per_hour", _fmt(s["false_alarms_per_hour"], 2)])
 
 
+def write_summary_json(path: Path, results: list[VideoResult], s: dict, settings: str, dataset: str,
+                       tolerance_s: float):
+    """Machine-readable summary for the dashboard's Results page."""
+    import json
+    from datetime import datetime
+    lo, hi = s["sensitivity_ci"]
+    nan = lambda v: None if isinstance(v, float) and math.isnan(v) else v   # noqa: E731
+    data = {
+        "generated": datetime.now().isoformat(timespec="seconds"),
+        "dataset": dataset,
+        "detectors": settings,
+        "tolerance_s": tolerance_s,
+        "summary": {
+            "seizures": s["seizures"], "detected": s["detected"], "sensitivity": nan(s["sensitivity"]),
+            "sensitivity_ci": [nan(lo), nan(hi)],
+            "latency_median_s": nan(s["latency_median_s"]),
+            "latency_range_s": [nan(x) for x in s["latency_range_s"]],
+            "seizure_free_minutes": round(s["normal_hours"] * 60, 1),
+            "false_alarms": s["false_alarms_normal"],
+            "false_alarms_per_hour": nan(s["false_alarms_per_hour"]),
+            "repeat_detections": s["repeat_detections"],
+            "patients": len({r.filename.split("_")[0] for r in results}),
+        },
+        "videos": [{
+            "filename": r.filename, "minutes": round(r.duration_s / 60, 1), "seizures": len(r.seizures),
+            "detected": r.detected, "latencies_s": [round(x, 1) for x in r.latencies],
+            "false_alarms": r.false_alarms, "repeats": r.repeats,
+            "person_found_pct": round(r.person_fraction * 100),
+            "detected_by": sorted({d.trigger for d in r.detections if d.trigger}),
+        } for r in results],
+    }
+    path.write_text(json.dumps(data, indent=1))
+
+
 def main():
     ap = argparse.ArgumentParser(description="Evaluate the seizure detector on labelled videos")
     ap.add_argument("videos", type=Path, help="folder containing the videos")
@@ -325,6 +370,8 @@ def main():
                     help="both = as deployed (default); or one detector alone, to compare them")
     ap.add_argument("--tolerance", type=float, default=10.0, help="matching tolerance in seconds (default 10)")
     ap.add_argument("--out", type=Path, help="results CSV (default: data/evaluation_results.csv)")
+    ap.add_argument("--dataset", default="", help="description shown on the dashboard Results page, "
+                    "e.g. 'WU-SAHZU-EMU-Video (public hospital EMU videos)'")
     args = ap.parse_args()
 
     cfg = yaml.safe_load(args.config.read_text())
@@ -369,7 +416,10 @@ def main():
                 "rhythmic": f"rhythm only ({onset:.0f} s of sustained rhythm)"}[args.detectors]
     print_report(results, s, args.tolerance, settings)
     write_csv(args.out, results, s)
+    summary_path = args.out.with_name("evaluation_summary.json")
+    write_summary_json(summary_path, results, s, settings, args.dataset or args.videos.name, args.tolerance)
     print(f"\n  Per-video results written to {args.out}")
+    print(f"  Summary for the dashboard Results page: {summary_path}")
 
 
 if __name__ == "__main__":

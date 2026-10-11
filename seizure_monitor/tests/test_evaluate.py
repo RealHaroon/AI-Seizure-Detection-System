@@ -42,12 +42,15 @@ def test_one_detection_cannot_catch_two_seizures():
     assert (r.detected, r.false_alarms) == (1, 0)
 
 
-def test_summary_false_alarms_per_hour_uses_normal_videos_only():
+def test_summary_false_alarms_counted_over_all_seizure_free_time():
     seiz = score_video(VideoResult("S1.mp4", 600, [(10, 52)], detections=[det(19), det(400)]), 10)
     normal = score_video(VideoResult("N1.mp4", 1800, [], detections=[det(100)]), 10)
     s = summarize([seiz, normal])
     assert s["sensitivity"] == 1.0
-    assert s["false_alarms_normal"] == 1 and math.isclose(s["false_alarms_per_hour"], 2.0)
+    # Seizure-free time = 1800 s normal video + (600 - (0..62)) s of the seizure video = 2338 s; 2 false alarms
+    assert s["false_alarms_normal"] == 2
+    assert math.isclose(s["normal_hours"], 2338 / 3600)
+    assert math.isclose(s["false_alarms_per_hour"], 2 / (2338 / 3600))
     assert s["extra_detections_in_seizure_videos"] == 1
 
 

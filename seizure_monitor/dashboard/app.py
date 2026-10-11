@@ -29,6 +29,7 @@ from flask import Flask, Response, abort, jsonify, redirect, render_template, re
 
 from monitor.fusion import TRIGGER_TEXT
 from monitor.storage import REVIEW_LABELS, EventStore
+from monitor.trace import trace_path
 
 LABEL_TEXT = {"unreviewed": "Needs review", "real_seizure": "Real seizure", "false_alarm": "False alarm"}
 
@@ -36,13 +37,14 @@ LABEL_TEXT = {"unreviewed": "Needs review", "real_seizure": "Real seizure", "fal
 class LiveState:
     """Latest annotated frame + detector state, shared between the monitor loop and web requests."""
 
-    def __init__(self, jpeg_quality: int, alert_status=None):
+    def __init__(self, jpeg_quality: int, alert_status=None, switch=None):
         self._lock = threading.Lock()
         self._frame = None
         self._frame_id = 0
         self._info: dict = {}
         self.jpeg_quality = jpeg_quality
         self.alert_status = alert_status     # fn() -> dict from AlertManager
+        self.switch = switch                 # ArmSwitch: pause / resume monitoring
         self.running = True
 
     def update(self, frame_bgr, info: dict):
@@ -64,7 +66,8 @@ class LiveState:
         with self._lock:
             info = dict(self._info)
         alerts = self.alert_status() if self.alert_status else {}
-        return {"monitor_running": self.running, **info, **alerts}
+        armed = self.switch.armed if self.switch else True
+        return {"monitor_running": self.running, "armed": armed, **info, **alerts}
 
 
 def create_app(store: EventStore, data_dir: Path, live: LiveState | None = None, stream_fps: float = 10) -> Flask:
@@ -108,6 +111,14 @@ def create_app(store: EventStore, data_dir: Path, live: LiveState | None = None,
         return render_template("event.html", ev=view(ev), labels=LABEL_TEXT, saved=request.args.get("saved"),
                                page="events")
 
+    @app.get("/results")
+    def results_page():
+        """Evaluation summary written by tools/evaluate.py (data/evaluation_summary.json)."""
+        import json
+        path = data_dir / "evaluation_summary.json"
+        r = json.loads(path.read_text()) if path.exists() else None
+        return render_template("results.html", r=r, page="results")
+
     @app.post("/events/<int:event_id>/review")
     def review(event_id):
         if store.get_event(event_id) is None:
@@ -145,6 +156,14 @@ def create_app(store: EventStore, data_dir: Path, live: LiveState | None = None,
 
     # ---------------------------------------------------------------- API
 
+    @app.get("/api/events/<int:event_id>/trace")
+    def event_trace(event_id):
+        """Movement readings around the event (saved by monitor/trace.py) for the chart."""
+        path = trace_path(data_dir / "traces", event_id)
+        if not path.exists():
+            abort(404)
+        return Response(path.read_text(), mimetype="application/json")
+
     @app.get("/api/status")
     def api_status():
         """Polled by the live page and by the Android automation app.
@@ -155,6 +174,17 @@ def create_app(store: EventStore, data_dir: Path, live: LiveState | None = None,
         if live is None:
             return jsonify({"monitor_running": False, "call": False})
         return jsonify(live.status())
+
+    @app.post("/api/arm")
+    def api_arm():
+        """Pause or resume monitoring (dashboard button). Body: {"armed": true|false}."""
+        if live is None or live.switch is None:
+            abort(404)
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data.get("armed"), bool):
+            abort(400, "expected JSON {\"armed\": true|false}")
+        live.switch.set(data["armed"])
+        return jsonify({"armed": live.switch.armed})
 
     @app.get("/stream.mjpg")
     def stream():

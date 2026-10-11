@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Event {{ ev.id }} · Seizure Monitor{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='event_chart.js') }}"></script>{% endblock %}
 {% block content %}
 <p><a href="{{ url_for('events_page') }}" title="Back to the list of events">← All events</a></p>
 
@@ -15,6 +17,7 @@
     <div class="placeholder">No clip was recorded for this event.</div>
     {% endif %}
   </section>
+
 
   <section class="card">
     <h1>Event {{ ev.id }}</h1>
@@ -45,7 +48,26 @@
         {% endif %}
       </div>
     </form>
-    <p class="muted small">* Heuristic rhythm-strength score (0–1), not a probability.</p>
+    <p class="muted small">* Heuristic 0–1 score of how strong the movement or rhythm was, not a probability.</p>
+  </section>
+
+  <section class="card chart-card" id="trace" data-src="{{ url_for('event_trace', event_id=ev.id) }}">
+    <h2>Why it alerted: movement in the bed area</h2>
+    <p class="muted small">Seconds from when strong movement began (log scale, so both small and large movement
+      are visible). The alert fires once movement stays above the alert level for most of a few seconds; the
+      shaded span is the event.</p>
+    <div class="chart-wrap" hidden>
+      <svg class="chart-svg" width="100%" role="img"
+        aria-label="Line chart of movement in the bed area over time, with the alert level and the moment the alert fired"></svg>
+      <div class="chart-tip" hidden></div>
+    </div>
+    <p class="chart-empty muted" hidden>No movement data for this event (it was recorded before this feature
+      existed, or by the rhythm detector only).</p>
+    <details class="chart-table">
+      <summary title="Show the movement values second by second">Show data table</summary>
+      <table class="events"><thead><tr><th>Second</th><th>Mean movement (bed widths/s)</th></tr></thead>
+        <tbody></tbody></table>
+    </details>
   </section>
 </div>
 {% endblock %}

@@ -1,0 +1,47 @@
+RECORDING GUIDE - test clips for the seizure monitor
+=====================================================
+Goal: measure FALSE ALARMS from normal movement in bed, and check that a
+simulated seizure is caught. Total time: about 30 minutes.
+
+SETUP (once, then DON'T move the phone)
+  1. Phone FIXED on a shelf / wardrobe / stacked books. Never handheld.
+  2. Looking down at the bed from the side or the foot of the bed.
+  3. The WHOLE bed in frame, with a little floor around it.
+  4. Landscape, normal video mode: NO slow-motion, NO zoom. 720p or 1080p.
+  5. Same phone position for every clip (then one bed box works for all).
+
+NORMAL CLIPS (most important: they test false alarms)
+  Act like a normal night. Do NOT move dramatically.
+
+  File     What to do                                              Length
+  ------   ------------------------------------------------------  ------
+  N1.mp4   Lie still, as if sleeping                                3 min
+  N2.mp4   Turn over every 20-30 s (back -> side -> other side)     2 min
+  N3.mp4   Scratch, adjust pillow, pull blanket up, stretch         2 min
+  N4.mp4   Sit up, get out of bed, walk away, come back, lie down   2 min
+  N5.mp4   Someone walks past / sits on the bed / makes the bed     2 min
+  N6.mp4   Lights dim (night light only): lying + turning over      2 min
+
+SIMULATED SEIZURE CLIPS (for the demo and a sanity check)
+
+  File     What to do
+  ------   --------------------------------------------------------------
+  S1.mp4   Lie still 20 s -> shake arms, legs and body vigorously,
+           nonstop, for 40 s -> lie still 30 s
+  S2.mp4   Same as S1, but under a blanket
+
+  SAFETY: shake on the bed, away from the edges and the headboard.
+
+AFTER RECORDING
+  1. Copy all clips to:  test_vidoes/own/
+  2. For S1 and S2, write down the second the shaking STARTS and STOPS
+     (watch the video), e.g.   S1: 20 to 60    S2: 22 to 61
+  3. Tell Claude. It will set the bed box, build the labels file and run
+     the evaluation: false alarms on N1-N6, and whether S1/S2 are caught.
+
+WHAT THESE CLIPS CAN AND CAN'T SHOW
+  - They measure how often NORMAL BED MOVEMENT causes a false alarm.
+  - They do NOT teach the system to tell dancing or waving from a seizure.
+    The movement detector reacts to any sustained vigorous movement inside
+    the bed area. That's by design: missing a seizure is worse than a false
+    alarm. Always set a tight bed box (tools/set_bed_area.py).

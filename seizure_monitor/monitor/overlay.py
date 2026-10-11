@@ -56,6 +56,34 @@ def draw_clip_banner(frame, out, wall_time: float, source_name: str):
     text(frame, label, w - tw - 8, 18, STATE_COLOUR[out.state], 0.45, 1)
 
 
+def draw_paused_banner(frame, wall_time: float, source_name: str):
+    """Grey banner for the web stream while monitoring is paused."""
+    h, w = frame.shape[:2]
+    cv2.rectangle(frame, (0, 0), (w, 26), (60, 60, 60), -1)
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(wall_time))
+    text(frame, f"{stamp}  {source_name}", 6, 18, WHITE, 0.45)
+    (tw, _), _ = cv2.getTextSize("PAUSED", FONT, 0.45, 1)
+    text(frame, "PAUSED", w - tw - 8, 18, ORANGE, 0.45, 1)
+
+
+def render_paused(frame, fps, alert=None):
+    """Live window while monitoring is paused: dimmed video, no detection."""
+    h = max(frame.shape[0], PANEL_MIN_H)
+    canvas = np.zeros((h, frame.shape[1] + PANEL_W, 3), np.uint8)
+    canvas[:frame.shape[0], :frame.shape[1]] = (frame * 0.55).astype(np.uint8)
+    x0 = frame.shape[1]
+    x, y = x0 + 12, 30
+    cv2.rectangle(canvas, (x - 4, y - 22), (x0 + PANEL_W - 10, y + 10), GREY, -1)
+    text(canvas, "PAUSED", x + 4, y + 2, (255, 255, 255), 0.7, 2)
+    for i, line in enumerate(["Monitoring is paused:", "no detection, alarms or recording.", "",
+                              "Press P (or the dashboard button)", "to resume when the person is in bed."]):
+        text(canvas, line, x, y + 40 + 22 * i)
+    if alert:
+        _draw_alert_status(canvas, x, canvas.shape[0] - 60, alert)
+    text(canvas, f"{fps:4.1f} fps   p: resume   q: quit", x, canvas.shape[0] - 12, GREY)
+    return canvas
+
+
 def render_live(frame, result, out, cfg, mcfg, fps, recording=False, alert=None):
     """Live tuning view: camera frame with skeleton and bed area, plus a feature panel on the right.
 
@@ -159,4 +187,4 @@ def _draw_panel(img, x0, fused, cfg, mcfg, fps):
         text(img, f"Event running {fused.t - e.start:.0f}s  ({e.trigger})", x, y, RED, 0.5, 1)
         y += 20
         text(img, f"Confidence (heuristic): {e.confidence:.2f}", x, y)
-    text(img, f"{fps:4.1f} fps   s: stop alarm   q: quit", x, img.shape[0] - 12, GREY)
+    text(img, f"{fps:4.1f} fps   s: stop alarm   p: pause   q: quit", x, img.shape[0] - 12, GREY)

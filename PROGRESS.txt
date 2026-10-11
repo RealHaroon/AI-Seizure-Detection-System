@@ -1,5 +1,5 @@
 SEIZURE MONITOR - PROGRESS SO FAR
-Updated: 9 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
+Updated: 11 Oct 2026     Demo: 17 Oct 2026, National Epilepsy Center Pakistan
 ==========================================================================
 
 WHAT THE SYSTEM DOES (one line)
@@ -117,7 +117,7 @@ DETECTOR A - MOVEMENT IN BED AREA  (done, 8 Oct)
   [x] monitor/fusion.py  - alert if EITHER detector fires; event records which
   [x] tools/set_bed_area.py - drag a box around the bed once per camera
   [x] Live window, dashboard, CSV and alerts show "detected by"
-  [x] RESULT (9 Oct) on WU-SAHZU hospital videos, 10 seizures / 6 patients
+  [x] RESULT (9 Oct) on WU-SAHZU hospital videos, 10 seizures / 5 patients
       (pat03, 05, 07, 13, 14):
         9/10 seizures caught = 90% (95% CI 60-98%)
         0 false alarms in 22.5 min of normal footage
@@ -136,9 +136,41 @@ DETECTOR A - MOVEMENT IN BED AREA  (done, 8 Oct)
 
 
 --------------------------------------------------------------------------
+IMPROVEMENTS (10 Oct)
+--------------------------------------------------------------------------
+  [x] Arm / Pause monitoring: key 'p' in the live window, or the button on
+      the dashboard live page. Paused = no detection, alarm or recording.
+      Pausing during an event closes it and counts as "someone is here".
+      Tested end to end (pause -> resume -> seizure still detected).
+  [x] Patient selection: a detected person must be mostly inside the bed box,
+      otherwise they're ignored (visitors / nurses beside the bed).
+      Tried tracking 3 people: no detection gain on hospital video and
+      73 ms/frame (too slow for 15 fps), so it tracks 1 person (29 ms).
+      Rhythm detector is still 0/10 on hospital video (night-vision IR +
+      blankets: pose finds the patient in only 1-5% of frames on pat07/pat14).
+      Movement detector unchanged: 9/10, 0 false alarms.
+
+
+--------------------------------------------------------------------------
+DEMO POLISH (11 Oct)
+--------------------------------------------------------------------------
+  [x] Movement chart on each event page ("Why it alerted"): movement over
+      time, the alert level, the event span and the moment the alert fired.
+      Hover for exact values; data table for accessibility.
+  [x] Results page in the dashboard: seizures caught, 95% CI, false alarms,
+      alert time, per-video table, honest "how to read these numbers".
+      Filled by:  python tools/evaluate.py ... --dataset "description"
+  [x] False alarms now counted over ALL seizure-free footage (normal video
+      + time before each seizure), not only the normal video.
+  [x] Startup self-check printed on every start; `python main.py --check`
+      runs only the checks: camera, model, bed box size, alarm sound,
+      Telegram (bot + chat), ffmpeg, dashboard port, disk space.
+
+
+--------------------------------------------------------------------------
 TESTING DONE
 --------------------------------------------------------------------------
-  [x] 53 automated tests, all passing (python -m pytest)
+  [x] 66 automated tests, all passing (python -m pytest)
         detector 11, recorder 4, storage 3, alerts 11, dashboard 5, evaluation 8
   [x] Pipeline speed: ~28 ms per frame -> 15 fps on this laptop
   [x] Telegram client tested against a local imitation of the Telegram API
@@ -204,5 +236,6 @@ HOW TO RUN
   python main.py --source ../test_vidoes/test7.mp4            # a video file
   python tools/test_alert.py                # test alarm + Telegram
   python dashboard/app.py                   # review events without camera
+  python main.py --source 0 --check         # startup checklist only
   python tools/evaluate.py ../test_vidoes ../test_vidoes/labels.csv   # metrics
   Dashboard: http://127.0.0.1:8000

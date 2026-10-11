@@ -55,3 +55,8 @@ TESTS
 
 Settings (thresholds, alarm, privacy, dashboard) are in config.yaml.
 Tested on Ubuntu 26.04 with Python 3.14, CPU only.
+
+
+
+
+see the thing is it is only a detection model with limited resourses cause of we being students and NEC couldn't provide us vidoes and internet doesn't have much data either, but we you and i built something meaningful out of it, BUT this is not the future, it has so many flaws like what if patient got seizure in bathroom? then what? and what if patient got seizure outside then what? for sure its out acadmic project we did our best we can do with all circumstances but still we can not just show them the detection model and keep our mouths shut of course we will them the limitations that we faced while creating this model/project and will ask them about  more data to train a proper deep learning model, but this is not the future scope of this project, the future scope of this project will be the wrist device while it can be a smart watch or a dedicated wrist device for epellepsy, i know few countries have this but in pakistan we have nothing like that, because the wrist device just solves all the problems like outdoor seizure, off camera seizure detection, plus it can be connected with mobile phone via some app, to moniter all the things and most important to message/call to parents/guardians and send them location and many more things we can add, what  you think about it?

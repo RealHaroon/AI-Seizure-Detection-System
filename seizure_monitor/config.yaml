@@ -13,6 +13,12 @@ pose:
   model_url: https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_{model}/float16/latest/pose_landmarker_{model}.task
   min_detection_confidence: 0.5
   min_tracking_confidence: 0.5
+  # Patient selection: detect several people and keep the one in the bed (not a nurse or visitor).
+  num_poses: 1             # people detected per frame. 3 picks the patient better among several people,
+                           # but costs ~73 ms/frame vs ~29 ms (breaks 15 fps on our laptop) and gave no
+                           # detection gain on hospital video. With 1, someone outside the bed is ignored.
+  min_in_bed_fraction: 0.6 # share of a person's visible body points that must be inside motion.bed_area
+  max_jump: 0.25           # keep following the same patient if they moved less than this x bed width
 
 detector:
   # --- Signal preparation ---
@@ -72,7 +78,8 @@ motion:
   confidence_full_speed: 0.15  # heuristic confidence reaches 1 at this mean speed (NOT a probability)
 
 monitor:
-  source_name: Bedroom camera   # shown in clips, the event log and (later) alerts
+  source_name: Bedroom camera   # shown in clips, the event log and alerts
+  start_armed: true        # start monitoring immediately; pause/resume with 'p' or the dashboard button
 
 recording:
   enabled: true            # set false while tuning if you don't want clips

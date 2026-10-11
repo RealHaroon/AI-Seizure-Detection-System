@@ -201,6 +201,13 @@ class EventRecorder:
         self._writer = None
         self._stop_at = None
 
+    def stop_now(self):
+        """Monitoring paused: finish any clip immediately and drop the pre-event buffer
+        (frames from before the pause shouldn't end up in the next event's clip)."""
+        if self._writer is not None:
+            self._finish()
+        self._buffer.clear()
+
     def close(self):
         """Finish any clip in progress and wait for all clips to be written (call on shutdown)."""
         if self._writer is not None:

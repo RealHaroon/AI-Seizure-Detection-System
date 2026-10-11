@@ -16,6 +16,8 @@
          title="Live camera view with the current detector state and alert status">Live</a>
       <a href="{{ url_for('events_page') }}" class="{{ 'active' if page == 'events' }}"
          title="All detected events: open one to watch its clip and label it">Events</a>
+      <a href="{{ url_for('results_page') }}" class="{{ 'active' if page == 'results' }}"
+         title="How well the detector did on labelled hospital seizure videos: seizures caught, false alarms, alert time">Results</a>
       <a href="{{ url_for('export_csv') }}"
          title="Download all events as a CSV seizure diary (opens in Excel) to share with the doctor">Export diary</a>
     </nav>
@@ -27,7 +29,7 @@
 
   <footer class="footer">
     Research prototype, not a medical device. Detects only <strong>convulsive (motor) seizures</strong>
-    using AI pose estimation and movement rhythm analysis; it cannot detect non-motor seizures.
+    by analysing movement in the bed area and AI pose estimation; it cannot detect non-motor seizures.
     Never rely on it as the only safety measure.
   </footer>
   {% block scripts %}{% endblock %}

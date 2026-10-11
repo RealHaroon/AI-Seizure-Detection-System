@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Results · Seizure Monitor{% endblock %}
+{% block content %}
+{% if not r %}
+<section class="card">
+  <h1>No evaluation results yet</h1>
+  <p class="muted">Run the evaluation tool on labelled videos, then reload this page:</p>
+  <pre class="code">python tools/evaluate.py VIDEO_FOLDER LABELS.csv --dataset "short description"</pre>
+</section>
+{% else %}
+{% set s = r.summary %}
+<section class="card">
+  <div class="card-head">
+    <div>
+      <h1>How well does it detect seizures?</h1>
+      <p class="muted small" style="margin:0">{{ r.dataset }} · evaluated {{ r.generated[:10] }}</p>
+    </div>
+  </div>
+
+  <p class="hero" aria-label="{{ s.detected }} of {{ s.seizures }} seizures detected">
+    <span class="hero-value">{{ s.detected }} of {{ s.seizures }}</span>
+    <span class="hero-label">seizures detected</span>
+  </p>
+
+  <div class="tiles">
+    <div class="tile" title="Share of labelled seizures caught. The range is the 95% confidence interval: with few seizures the true rate is uncertain.">
+      <div class="tile-label">Sensitivity</div>
+      <div class="tile-value">{{ (s.sensitivity * 100) | round | int }}%</div>
+      <div class="tile-note">95% CI {{ (s.sensitivity_ci[0] * 100) | round | int }}–{{ (s.sensitivity_ci[1] * 100) | round | int }}%</div>
+    </div>
+    <div class="tile" title="Alerts that fired outside any labelled seizure, over all seizure-free footage (normal videos plus the time before each seizure).">
+      <div class="tile-label">False alarms</div>
+      <div class="tile-value">{{ s.false_alarms }}</div>
+      <div class="tile-note">in {{ s.seizure_free_minutes }} min of seizure-free footage</div>
+    </div>
+    <div class="tile" title="Seconds from the labelled clinical onset to the alert. In these seizures the clinical onset is the focal start; convulsions begin later.">
+      <div class="tile-label">Median alert time</div>
+      <div class="tile-value">{{ s.latency_median_s | round | int }} s</div>
+      <div class="tile-note">after clinical onset (range {{ s.latency_range_s[0] | round | int }} to {{ s.latency_range_s[1] | round | int }} s)</div>
+    </div>
+    <div class="tile" title="Different people in the evaluation videos.">
+      <div class="tile-label">Patients</div>
+      <div class="tile-value">{{ s.patients }}</div>
+      <div class="tile-note">{{ r.videos | length }} videos</div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Per video</h2>
+  <table class="events results-table">
+    <thead><tr><th>Video</th><th>Length</th><th>Seizures</th><th>Result</th><th>Alert after onset</th>
+      <th>False alarms</th><th>Detected by</th></tr></thead>
+    <tbody>
+      {% for v in r.videos %}
+      <tr>
+        <td data-th="Video"><code>{{ v.filename | replace('.mp4', '') }}</code></td>
+        <td data-th="Length">{{ v.minutes }} min</td>
+        <td data-th="Seizures">{{ v.seizures or "– (normal)" }}</td>
+        <td data-th="Result">
+          {% if v.seizures == 0 %}<span class="label label-false_alarm">Normal footage</span>
+          {% elif v.detected == v.seizures %}<span class="label label-ok">✓ Detected</span>
+          {% else %}<span class="label label-real_seizure">✗ Missed</span>{% endif %}
+        </td>
+        <td data-th="Alert after onset">{% for l in v.latencies_s %}{{ l | round | int }} s{% if not loop.last %}, {% endif %}{% else %}–{% endfor %}</td>
+        <td data-th="False alarms">{{ v.false_alarms }}</td>
+        <td data-th="Detected by">{{ v.detected_by | join(", ") or "–" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>How to read these numbers</h2>
+  <ul class="notes">
+    <li><strong>A first indication, not clinical validation.</strong> {{ s.seizures }} seizures is a small test set;
+      that is why the confidence interval is wide.</li>
+    <li><strong>Alert time is counted from the clinical onset</strong> in the dataset labels. In focal-to-bilateral
+      seizures that is the focal start; the convulsive phase, which this system targets, begins later and is not labelled.</li>
+    <li><strong>Settings were chosen before part of the data existed.</strong> Thresholds were set on the first two
+      patients; the seizures of the later patients were then all detected with the same settings.</li>
+    <li><strong>Repeat alerts within one seizure</strong> ({{ s.repeat_detections }}) are not counted as false alarms:
+      the live system merges them into a single alert.</li>
+    <li><strong>The seizure-free footage is mostly calm.</strong> False alarms from vigorous normal activity in bed
+      (turning over, getting up, someone making the bed) still need to be measured on more data.</li>
+    <li>Detectors: {{ r.detectors }}. Matching tolerance ±{{ r.tolerance_s | round | int }} s.</li>
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,7 +1,17 @@
 // Live page: poll /api/status every second and update the state panel.
 (function () {
   const $ = (id) => document.getElementById(id);
-  const stateEl = $("state"), alertEl = $("alert");
+  const stateEl = $("state"), alertEl = $("alert"), armBtn = $("arm");
+  let armed = true;
+
+  armBtn.addEventListener("click", async () => {
+    armBtn.disabled = true;
+    try {
+      await fetch("/api/arm", { method: "POST", headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ armed: !armed }) });
+      await refresh();
+    } finally { armBtn.disabled = false; }
+  });
 
   function show(alertClass, text) {
     alertEl.className = "alert " + alertClass;
@@ -19,6 +29,10 @@
         stateEl.className = "state state-" + s.state.split(" ")[0];
         stateEl.textContent = s.state;
       }
+      armed = s.armed !== false;
+      armBtn.hidden = !s.monitor_running;
+      armBtn.textContent = armed ? "Pause monitoring" : "Resume monitoring";
+      armBtn.className = "button arm-button " + (armed ? "secondary" : "");
       $("source").textContent = s.source || "–";
       $("movement").textContent = s.movement == null ? "off" :
         `${s.movement.toFixed(3)} (alert level ${s.movement_threshold})`;
