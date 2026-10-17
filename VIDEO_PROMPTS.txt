@@ -1,0 +1,261 @@
+3D PROPOSAL VIDEO - 10-SECOND PROMPTS FOR CHATGPT (SORA)
+=========================================================
+Two short explainer films for the NEC proposal, built from 10-second clips:
+  FILM A - Phase 1: smartwatch + phone app     (10 clips, ~100 s)
+  FILM B - Phase 2: dedicated seizure band     ( 8 clips,  ~80 s)
+Every prompt below is COMPLETE ON ITS OWN: paste one prompt = one clip.
+
+---------------------------------------------------------------------
+HOW TO DO IT (read once)
+---------------------------------------------------------------------
+1. CHARACTER REFERENCES FIRST (keeps faces and devices the same in every
+   clip). In ChatGPT, generate these 6 images once and save them:
+     R1 "3D Pixar-style character sheet of Ali, a 17-year-old Pakistani
+         boy, short black hair, grey t-shirt, slim dark smartwatch on his
+         left wrist, neutral pose, plain light background"
+     R2 "3D Pixar-style character sheet of Ayesha, a Pakistani mother in
+         her 40s, shalwar kameez with dupatta, kind face, plain background"
+     R3 "3D Pixar-style character sheet of Imran, a Pakistani father in his
+         40s, kurta, short beard, plain background"
+     R4 "3D Pixar-style character sheet of Sara, a 10-year-old Pakistani
+         girl in a light blue school uniform, plain background"
+     R5 "3D product render of a slim dark smartwatch with a round screen
+         and teal glow, studio light, navy background"
+     R6 "3D product render of a slim navy soft-rubber medical wristband with
+         a teal light ring and one round button, studio light"
+   When making a clip, attach the matching reference image(s) and write
+   "Use the attached image(s) for the character/device look."
+2. Settings: 16:9, 10 seconds, highest quality your plan allows.
+3. Make 2-3 versions of each clip and keep the best.
+4. Join the clips in CapCut / Canva / Clipchamp. Add ALL text, screen
+   content, labels and the voice-over THERE. (Sora writes garbled text, so
+   every prompt asks for blank screens.)
+5. If a prompt is refused because of the word "seizure", it does not use
+   that word: they all describe "a sudden medical episode". If still
+   refused, soften to "suddenly becomes unwell and stiff".
+
+The escalation chain both films show (also on proposal slide 5):
+  ~10 s rhythmic movement -> detected -> vibration + "Are you OK?" (15 s)
+  tap "I'm OK" -> cancelled, saved for the doctor
+  no tap -> loud alarm nearby + alert with GPS + SMS to all guardians
+  a guardian taps "I'm coming" -> everyone is told
+  nobody in ~30 s -> automatic calls -> then an emergency contact
+  (e.g. Rescue 1122, to decide with NEC) -> everything saved in the diary
+  Smartwatch: alerts go via the phone. Band: via its own SIM card.
+
+=====================================================================
+FILM A - PHASE 1: SMARTWATCH + PHONE APP
+=====================================================================
+
+A1 - Ordinary day (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, warm and calm,
+  16:9. Ali, a 17-year-old Pakistani boy with short black hair and a grey
+  t-shirt, walks home along a sunny Pakistani street with a school bag.
+  The camera slowly moves in from a wide shot to a close-up of the slim
+  dark smartwatch on his left wrist, which glows with a soft teal light.
+  Peaceful, everyday mood. No text, no logos, screens blank.
+
+A2 - What the watch measures (10 s)
+  10-second 3D product-explainer animation, 16:9, dark navy background
+  with soft teal glow. A slim dark smartwatch floats and slowly rotates,
+  then turns semi-transparent like an X-ray hologram, revealing three tiny
+  glowing parts inside: a small motion-sensor chip with three short
+  arrows pointing in different directions, a tiny gyroscope ring spinning,
+  and a green light sensor on the back shining downward with a small
+  pulsing heart shape above it. Clean, elegant, medical-tech look. No text.
+
+A3 - The episode begins (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9, evening in
+  a cosy Pakistani living room with warm lamp light. Ali, a 17-year-old
+  boy with short black hair and a grey t-shirt, sits alone on a sofa. He
+  suddenly becomes stiff and his arms and legs start moving in rhythmic
+  jerks, a sudden medical episode. Shown respectfully from a medium-wide
+  side angle, his face turned away, no distress close-up. The camera holds
+  steady. The smartwatch on his wrist glows teal. No text.
+
+A4 - Inside the watch: the AI detects it (10 s)
+  10-second abstract 3D visualisation, 16:9, dark navy space, teal and
+  orange light. Smooth gentle teal waves flow from left to right, then
+  turn into sharp, regular, rhythmic waves. The waves flow into a small
+  glowing chip; tiny nodes around it light up one after another like a
+  small neural network; a circular progress ring around the chip slowly
+  fills; when it is full, one soft orange pulse spreads outward. Clean,
+  minimal, no text, no numbers.
+
+A5 - "Are you OK?" - no answer, alarm (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9. Close-up of
+  a slim dark smartwatch on a teenage boy's wrist resting on a sofa
+  cushion. The watch vibrates strongly with visible ripple rings; its round
+  screen shows one large blank glowing button and a circular countdown
+  ring that slowly empties. The hand does not move. When the ring is
+  empty, the watch flashes orange and visible sound waves ripple outward
+  into the warm living room. Tense but calm. Screen blank, no text.
+
+A6 - Alert with location to the family (10 s)
+  10-second 3D animated clip, 16:9, night. An orange glowing signal rises
+  from a smartphone on a living-room table, flies out of the window and
+  travels across a Pakistani city at night as a bright light trail. It
+  splits into two trails, each with a small glowing map-pin floating above
+  it: one reaches a phone on an office desk, the other a phone on a kitchen
+  counter. Both phones light up and vibrate. Blank screens, no text.
+
+A7 - Mother responds: "I'm coming" (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9. A warm
+  Pakistani home kitchen in the evening. Ayesha, a mother in her 40s in a
+  shalwar kameez with a dupatta, picks up her glowing phone, looks at it
+  with concern, taps one large blank button on the screen, then quickly
+  hurries out of the kitchen. A soft green light pulse travels out of her
+  phone and away, showing others are informed. Blank screen, no text.
+
+A8 - Help arrives (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9, cosy
+  Pakistani living room with warm lamp light. Ayesha, a mother in shalwar
+  kameez and dupatta, and a younger girl kneel next to Ali, a 17-year-old
+  boy lying on the sofa. The movements have stopped. Ayesha gently rolls
+  him onto his side into the recovery position, keeps a hand on his
+  shoulder and stays calmly with him. The watch on his wrist glows soft
+  teal again. Reassuring, gentle mood. No text.
+
+A9 - If nobody answers: escalation (10 s)
+  10-second 3D animated clip, 16:9, slightly cooler colours. An empty
+  office desk at night with a smartphone ringing and glowing on its own;
+  then a second phone ringing alone on a bedside table. An orange light
+  trail leaves the phone and travels through the city to an ambulance
+  station, where a white ambulance's light starts flashing. Informative,
+  not frightening. Blank screens, no text, no logos on the ambulance.
+
+A10 - The doctor's seizure diary (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9, a bright
+  clean Pakistani clinic in daytime. A friendly doctor in a white coat
+  looks at a laptop showing an abstract timeline and a waveform chart.
+  Across the desk sit Ali, a 17-year-old boy in a grey t-shirt, and his
+  mother Ayesha in shalwar kameez and dupatta. The doctor turns the laptop
+  toward them and nods. Hopeful mood. Screen abstract, no readable text.
+
+=====================================================================
+FILM B - PHASE 2: DEDICATED SEIZURE BAND (NO PHONE NEEDED)
+=====================================================================
+
+B1 - The band (10 s)
+  10-second 3D product animation, 16:9. A slim, rugged, soft-rubber
+  medical wristband in navy with a teal light ring and one round button on
+  the side, slowly rotating in soft studio light against a dark navy
+  background. Gentle reflections, premium minimal medical-device look.
+  The camera slowly circles it. No text, no logos.
+
+B2 - Exploded view: what is inside (10 s)
+  10-second 3D product-explainer animation, 16:9, dark navy background,
+  soft teal glow. A navy medical wristband separates into an exploded view,
+  its parts floating in layers: a small main processor chip in the centre,
+  a tiny motion-sensor chip, a green optical sensor on the underside, a
+  mini SIM card with a thin antenna, a small GPS antenna, a flat curved
+  battery, a tiny vibration motor, a tiny round speaker and a round
+  button. The parts hover for a moment, then smoothly reassemble into the
+  band. No text.
+
+B3 - Worn by a child at school (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9, bright
+  sunny Pakistani school courtyard. Sara, a 10-year-old girl in a light
+  blue school uniform, plays with classmates, wearing a navy wristband with
+  a teal light ring. The camera moves to a close-up of the band on her
+  wrist; a tiny light on its underside glows softly against her skin.
+  Cheerful, normal school day. No text.
+
+B4 - Episode and detection (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9. In a sunny
+  school courtyard, Sara, a 10-year-old girl in a light blue uniform,
+  sits under a tree and suddenly becomes stiff with rhythmic jerking of
+  her arms and legs, a sudden medical episode, shown respectfully from a
+  distance. A teacher in the background turns her head. The camera moves
+  to the navy wristband: inside it, glowing teal waves turn into sharp
+  rhythmic waves and a tiny chip lights up orange. No text.
+
+B5 - No answer: alarm (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9, school
+  courtyard. Close-up of a navy wristband on a young girl's wrist: it
+  vibrates and its teal light ring slowly counts down; nobody touches it.
+  Then the ring turns orange, flashes, and visible sound waves ripple
+  outward. A teacher in a shalwar kameez and two students run toward the
+  girl. Urgent but calm. No text.
+
+B6 - Direct alert over the mobile network (10 s)
+  10-second 3D animated clip, 16:9. An orange glowing signal rises
+  directly from a navy wristband on a child's wrist, straight up to a
+  mobile network tower on a rooftop (no phone involved), then splits into
+  two light trails across the city, each with a small floating map-pin:
+  one reaches a phone in a home, the other a phone in a small shop. Both
+  phones light up and ring. Blank screens, no text.
+
+B7 - Care and the record (10 s)
+  10-second 3D animated clip, stylized Pixar-like style, 16:9. Under a
+  tree in a school courtyard, a teacher has gently placed Sara, a
+  10-year-old girl in a blue uniform, on her side in the recovery
+  position and stays with her. Her mother, in shalwar kameez and dupatta,
+  arrives through the school gate and hurries over. The wristband glows
+  calm teal. Soft transition to a doctor's laptop with an abstract
+  timeline. Reassuring mood. No text.
+
+B8 - Closing: two devices, one mission (10 s)
+  10-second 3D product animation, 16:9, dark navy background with soft
+  teal light. A slim dark smartwatch on the left and a navy medical
+  wristband on the right float side by side and slowly rotate, gently
+  glowing. The camera slowly pulls back, leaving empty space above them
+  for a title. Elegant, hopeful. No text, no logos.
+
+=====================================================================
+TEXT + VOICE-OVER PER CLIP (add in the editor)
+=====================================================================
+FILM A
+  A1  Text: Phase 1: smartwatch + phone app
+      VO:   "This is Ali. He has epilepsy, and like many teenagers he is
+             often alone."
+  A2  Text: labels: Motion sensor · Gyroscope · Heart-rate sensor
+      VO:   "His watch measures the movement of his wrist and his heart
+             rate, every second."
+  A3  VO:   "When a convulsive seizure starts..."
+  A4  Text: On-watch AI: rhythmic convulsive movement for ~10 s
+      VO:   "...a small AI model on the watch recognises the pattern
+             within about ten seconds."
+  A5  Text: Watch screen: "Are you OK?" [I'm OK] + 15 s countdown
+            Caption: One tap = cancelled. No tap = alarm for people nearby
+      VO:   "The watch asks: are you OK? Ali can't answer, so it sounds an
+             alarm."
+  A6  Text: Phone: "Possible seizure - Ali - 19:42" + map + [I'm coming]
+            Caption: Alert + live location to all guardians (internet + SMS)
+      VO:   "At the same moment, his family gets an alert with his exact
+             location."
+  A7  Text: "Ayesha is coming" - everyone informed
+      VO:   "His mother taps 'I'm coming', and everyone knows help is on
+             the way."
+  A8  VO:   "She places him on his side and stays with him."
+  A9  Text: Nobody responds in 30 s -> automatic calls -> emergency contact
+            (e.g. Rescue 1122, to decide with NEC)
+      VO:   "If nobody responds, the system calls them, and then an
+             emergency contact."
+  A10 Text: Seizure diary: time, duration, signals, location, response
+      VO:   "Every event is saved for his doctor."
+FILM B
+  B1  Text: Phase 2: dedicated seizure band
+      VO:   "Next: a dedicated seizure band, for children and families
+             without a smartphone."
+  B2  Text: Processor (runs the AI) · Motion sensor · Heart-rate sensor ·
+            SIM + mobile network · GPS · Battery: weeks · Vibration ·
+            Speaker · SOS button
+      VO:   "Inside: motion and heart-rate sensors, a processor that runs
+             the AI, GPS, and its own SIM card."
+  B3  Text: Skin-contact check: warns if the band is taken off
+      VO:   "Its battery lasts weeks, and it knows if it is taken off."
+  B4  VO:   "When a seizure starts, the band recognises it..."
+  B5  Text: No response in 15 s -> loud alarm
+      VO:   "...and if no one cancels, it sounds an alarm."
+  B6  Text: Sent directly over its own SIM: no phone needed
+      VO:   "It sends the alert and location straight over the mobile
+             network."
+  B7  VO:   "Help arrives, and the event is saved for the doctor."
+  B8  Text: [Project name] - a seizure alarm families in Pakistan can afford
+      VO:   "Smartwatch first, to prove it with the National Epilepsy
+             Center. Then a band every family can afford."
+END CARD (both films, 5 s, add in the editor)
+  Concept animation of a proposal. The devices are not built yet and not
+  clinically validated. Detects convulsive (motor) seizures only.
+  All timings are design targets.
