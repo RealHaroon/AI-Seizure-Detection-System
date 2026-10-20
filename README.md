@@ -315,7 +315,7 @@ Clinical testing, validation, ethical approval, privacy assessment, and applicab
 
 ## 👨‍💻 Author
 
-**Zahid Ali**
+**Zahid Ali & M Haroon Abbas**
 
 Computer Science Student
 University of Sindh, Laar Campus Badin, Pakistan
